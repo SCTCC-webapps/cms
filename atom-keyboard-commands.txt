@@ -1,0 +1,49 @@
+Keyboard Shortcuts in Atom
+
+==General
+---ctrl shift p            == toggle command palette
+---alt  shift s            == snippets
+---alt  /                  == toggle focus
+
+==Tabs
+---ctrl b                  == browse tabs
+---ctrl pgdwn              == last tab
+---ctrl pgup               == next tab
+---alt  [number]           == switch tab
+
+==Cursor
+---ctrl [right or left]    == next/last word
+---ctrl shift [r/l]        == select to beginning/end of current word
+---ctrl backspace          == delete to beginning of current word
+---ctrl m                  == go to matching bracket
+---ctrl alt m              == select code inside matching brackets
+---ctrl g                  == go to line
+---ctrl enter              == new line below
+---ctrl shift enter        == new line below
+---ctrl shift k            == delete line
+---ctrl j                  == join lines
+---ctrl l                  == select line
+---ctrl shift [home/end]   == select to beginning/end
+---alt  shift down         == add selection below (multicursor)
+
+==Bookmarks (Breakpoints?)
+---ctrl shift f2           == set/remove bookmark (breakpoint?)
+---f2                      == next bookmark
+---shift f2                == previous bookmark
+
+==Panes
+---f11                     == toggle fullscreen
+---ctrl k [arrow]          == split pane
+---ctrl k, ctrl [arrow]    == change focus
+---ctrl w                   == merge pane
+
+==Tree View
+--- m (in tree view)       == move selected item dialog
+--- d (in Tree View)       == duplicate selected item
+--- a                      == add new file
+--- shift a                == add new folder
+
+==Git
+---ctrl shift h            == run git command
+---ctrl shift x            == run git commit
+---alt shift p             == list projects
