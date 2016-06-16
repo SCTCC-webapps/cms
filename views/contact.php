@@ -236,10 +236,10 @@ function write_validator(){
     frmValidator.addValidation("city", "req", "Please add a city.");
     frmValidator.addValidation("city", "maxlen=100", "The last name must be under 100 charecters.");
 
-    frmValidator.addValidation("state", "Please add a state.");
+    frmValidator.addValidation("state", "req" "Please add a state.");
     frmValidator.addValidation("state", "maxlen=50", "The last name must be under 50 charecters.");
 
-    frmValidator.addValidation("zip", "Please add a ZIP code.");
+    frmValidator.addValidation("zip", , "req", "Please add a ZIP code.");
     frmValidator.addValidation("zip", "maxlen=16", "The last name must be under 100 charecters.");
 
     frmValidator.addValidation("country", "req", "Please add a country.");
