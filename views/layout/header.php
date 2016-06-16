@@ -13,7 +13,7 @@ function write_header(string $custom_code = NULL, string $id = NULL, string $cla
   echo "<html>";
       echo "<head>";
       //javascript imports, stylesheets, etc, go here.
-      echo "<script language='JavaScript' src='/js/gen_validatorv4.js' type='text/javascript'></script>";
+      echo "<script language='JavaScript' src='../js/gen_validatorv4.js' type='text/javascript'></script>";
           echo "<!--imports for this page-->$custom_code";
       echo "</head>";
       echo "<body>";

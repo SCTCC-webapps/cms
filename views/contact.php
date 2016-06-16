@@ -214,7 +214,7 @@ function action_buttons($id, $actions = null){
 
 }
 function write_validator(){
-   $Validator_script = <<<EOD
+   $validator_script = <<<EOD
     <script language="JavaScript" type="text/javascript">
     var frmValidator = new Validator("add_or_update");
     frmValidator.EnableMsgsTogether();
@@ -242,7 +242,7 @@ function write_validator(){
     frmValidator.addValidation("zip", "Please add a ZIP code.");
     frmValidator.addValidation("zip", "maxlen=16", "The last name must be under 100 charecters.");
 
-    frmValidator.addValidation("country", "req" "Please add a country.");
+    frmValidator.addValidation("country", "req", "Please add a country.");
     frmValidator.addValidation("country", "maxlen=100", "The last name must be under 100 charecters.");
 
     frmValidator.addValidation("company", "req", "Please add a country.");
