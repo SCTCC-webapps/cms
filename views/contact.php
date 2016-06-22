@@ -112,19 +112,34 @@ function add_or_update(array $data = null, $action = 'add'){
   }else {
     $data = current($data);
   }
-  echo "<form action='new_contact.php' method='post' name='add_or_update' >";
+  echo "<form action='new_contact.php' method='post' name='add_or_update' class = 'data'>";
+  echo "<div>";
   echo "<input type='hidden' name='action' value='$action'/>";
   if(isset($_POST['id'])){
     echo "<input type='hidden' name='id' value='{$_POST['id']}'/>";
   }
+// echo "<table>";
+//   foreach($fields as $field){
+//     echo "<tr>";//"<div class='data'>";
+//     echo "<td><label for='$field'>{$labels[$field]}:</label></td>";
+//     echo "<td><input type='text' name='$field' value='{$data[$field]}'/></td>";
+//     echo "</tr>";//"</div>";
+// }
+// echo "</table>";
+echo "<table>";
+  $second_col = false;
   foreach($fields as $field){
-    echo "<div>";
-    echo "<label for='$field'>{$labels[$field]}:</label>";
-    echo "<input type='text' name='$field' value='{$data[$field]}'/>";
-    echo "</div>";
-  }
+    if($second_col === false){echo "<tr>";}//"<div class='data'>";
+    echo "<td><label for='$field'>{$labels[$field]}:</label></td>";
+    echo "<td><input type='text' name='$field' value='{$data[$field]}'/></td>";
+    if($second_col === true){echo "</tr>";}//"</div>";
 
-  echo "<div>";
+    $second_col = ! $second_col;
+}
+echo "</table>";
+
+echo "</div>";
+  echo "<div class='three-col' id='categories'>";
   if(array_key_exists('cat_array', $data)){
     // loop through the full list of categories.
     $cats = list_all_categories(); // list of all categories
@@ -153,8 +168,9 @@ function add_or_update(array $data = null, $action = 'add'){
   }
   echo "</div>";
   $button_value = ($action == 'add') ? "Add New Contact" : "Update Contact";
-  echo "<input type='submit' value='$button_value'/>";
+  echo "<div class='button-align-right'><input type='submit' value='$button_value'/></div>";
   echo "</form>";
+
   write_validator();
 }
 /**
@@ -168,7 +184,7 @@ function delete_or_view(array $data, $action = 'view'){
   global $fields, $labels;
 
   $data = current($data);
-  echo "<table>";
+  echo "<table class='data'>";
   foreach($fields as $field){
     echo "<tr>";
     echo "<td>{$labels[$field]}:</td>";
@@ -186,7 +202,7 @@ function delete_or_view(array $data, $action = 'view'){
   echo "</ul></td></tr>";
   echo "</table>";
   if(isset($_POST['id']) && $action == 'delete'){
-    echo "<div>";
+    echo "<div clas= 'data'>";
     echo "<form action='new_contact.php' method='post'>";
     echo "<input type='hidden' name='action' value='delete'/>";
     echo "<input type='hidden' name='id' value='{$_POST['id']}'/>";
@@ -198,20 +214,25 @@ function delete_or_view(array $data, $action = 'view'){
     echo "<div><a href='contacts.php#{$_POST['id']}'><- Back to Contacts</a></div>";
   }
 }
+/**
+  * This function displays the buttons on the page to load a matching action page.
+  * @param $id The id of the associated record
+  * @param $actions array of available buttons.
+  */
 function action_buttons($id, $actions = null){
   if(! isset($actions)){
     $actions = array('update', 'delete');
   }
-
+ echo "<div class='data'/>";
   foreach($actions as $action){
       $action_button = ucfirst($action);//ucfirst()` capitalizes the first letter in a string.
-      echo "<form action='contact.php' method='POST' name='{$id}_$action'>";
+      echo "<form action='contact.php' method='POST' name='{$id}_$action' class='button-action'>";
       echo "<input type='hidden' name='action' value='$action'/>";
       echo "<input type='hidden' name='id' value='{$id}'/>";
       echo "<input type='submit' name='submit' value='$action_button'/>";
       echo "</form>";
     }
-
+echo "</div>";
 }
 function write_validator(){
    $validator_script = <<<EOD
@@ -225,28 +246,14 @@ function write_validator(){
 
     frmValidator.addValidation("email_address", "req", "Please add an email address.");
     frmValidator.addValidation("email_address", "email", "That is not an email address!");
-    frmValidator.addValidation("email_address", "maxlen=100", "The last name must be under 100 charecters.");
+    frmValidator.addValidation("email_address", "maxlen=100", "The email must be under 100 charecters.");
 
-    frmValidator.addValidation("phone_number", "req", "Please add a phone number");
-    frmValidator.addValidation("phone_number", "maxlen=15", "Phone number must be under 100 charecters.");
-
-    frmValidator.addValidation("street_address", "req", "Please add a street.");
-    frmValidator.addValidation("street_address", "maxlen=100", "The last name must be under 100 charecters.");
-
-    frmValidator.addValidation("city", "req", "Please add a city.");
-    frmValidator.addValidation("city", "maxlen=100", "The last name must be under 100 charecters.");
-
-    frmValidator.addValidation("state", "req" "Please add a state.");
-    frmValidator.addValidation("state", "maxlen=50", "The last name must be under 50 charecters.");
-
-    frmValidator.addValidation("zip", , "req", "Please add a ZIP code.");
-    frmValidator.addValidation("zip", "maxlen=16", "The last name must be under 100 charecters.");
-
-    frmValidator.addValidation("country", "req", "Please add a country.");
-    frmValidator.addValidation("country", "maxlen=100", "The last name must be under 100 charecters.");
-
-    frmValidator.addValidation("company", "req", "Please add a country.");
-    frmValidator.addValidation("company", "maxlen=100", "The last name must be under 100 charecters.");
+    frmValidator.addValidation("phone_number", "maxlen=15", "Phone number must be under 15 charecters.");
+    frmValidator.addValidation("street_address", "maxlen=100", "The street name must be under 100 charecters.");
+    frmValidator.addValidation("city", "maxlen=100", "The city name must be under 100 charecters.");
+    frmValidator.addValidation("state", "maxlen=50", "The state name must be under 50 charecters.");
+    frmValidator.addValidation("zip", "maxlen=16", "The ZIP Code must be under 16 charecters.");
+    frmValidator.addValidation("company", "maxlen=100", "The company name must be under 100 charecters.");
     </script>
 EOD;
 //You cannot indent closing identifiers on heredoc syntax.

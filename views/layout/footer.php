@@ -10,6 +10,7 @@
   */
 
 function write_footer(string $custom_code = NULL, string $class = NULL){
-  echo "<div id='footer' class='footer $class'>$custom_code</div></div></body></html>";
+  echo "<div id='footer' class='footer $class'>$custom_code</div></div></div></body></html>";
+
 }
 ?>

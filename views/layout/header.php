@@ -9,13 +9,16 @@
   * @param string $class Optional value for styling. Determines the `class`
   * of the page's containing `div`. Defaults to `NULL`.
   */
-function write_header(string $custom_code = NULL, string $id = NULL, string $class= NULL){
+function write_header(string $custom_code = NULL){
   echo "<html>";
       echo "<head>";
+      echo "<title>SCTCC CTech Contact Management System</title>";
+      echo "<link href='css/styles.css' type='text/css' rel='stylesheet' />";
       //javascript imports, stylesheets, etc, go here.
       echo "<script language='JavaScript' src='../js/gen_validatorv4.js' type='text/javascript'></script>";
           echo "<!--imports for this page-->$custom_code";
       echo "</head>";
       echo "<body>";
-      echo "<div id='$id' class='$class'>";
+      echo "<div id='contentwrap'><div id='content'>";
+      echo "<img src='img/sctcc_logo.png' id='img_header'/>";
 }
