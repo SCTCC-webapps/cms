@@ -251,7 +251,7 @@ function table_display(array $data){
         echo "<form action='contact.php' method='POST' name='{$row['id']}_$action'>";
         echo "<input type='hidden' name='action' value='$action'/>";
         echo "<input type='hidden' name='id' value='{$row['id']}'/>";
-        echo "<input type='submit' name='submit' value='$action_button'/>";
+        echo "<input type='submit' name='submit' value='$action_button' class='sctcc-button'/>";
         echo "</form>";
       }
     echo "</td>";

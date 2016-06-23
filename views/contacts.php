@@ -8,6 +8,7 @@
   require 'layout/footer.php';
 
   write_header();
+  echo "<h3>Contacts List</h3>";
   table_display(get_contacts_with_categories_no_search());
   write_footer();
   ?>

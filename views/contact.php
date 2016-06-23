@@ -168,7 +168,7 @@ echo "</div>";
   }
   echo "</div>";
   $button_value = ($action == 'add') ? "Add New Contact" : "Update Contact";
-  echo "<div class='button-align-right'><input type='submit' value='$button_value'/></div>";
+  echo "<div class='button-align-center'><input type='submit' value='$button_value' class='sctcc-button'/></div>";
   echo "</form>";
 
   write_validator();
@@ -184,6 +184,7 @@ function delete_or_view(array $data, $action = 'view'){
   global $fields, $labels;
 
   $data = current($data);
+
   echo "<table class='data'>";
   foreach($fields as $field){
     echo "<tr>";
@@ -194,7 +195,7 @@ function delete_or_view(array $data, $action = 'view'){
 
 
   $cats = $data['cat_array'];//list_all_categories();
-  echo "<tr><td><ul>";
+  echo "<tr><td>Categories</td><td><ul>";
   $index = 0;
   foreach($cats as $id => $cat){
     echo "<li>$cat</li>";
@@ -206,12 +207,12 @@ function delete_or_view(array $data, $action = 'view'){
     echo "<form action='new_contact.php' method='post'>";
     echo "<input type='hidden' name='action' value='delete'/>";
     echo "<input type='hidden' name='id' value='{$_POST['id']}'/>";
-    echo "<label for='submit'>If you delete this contact, this action CANNOT be undone:</label>";
-    echo "<input type='submit' name='submit' value='Delete Contact'/>";
+  //  echo "<label for='submit'>If you delete this contact, this action CANNOT be undone:</label>";
+    echo "<input type='submit' name='submit' value='Delete Contact' class='delete-button'/>";
     echo "</form>";
     echo "</div>";
   }else{
-    echo "<div><a href='contacts.php#{$_POST['id']}'><- Back to Contacts</a></div>";
+    echo "<div class='align-left'><a href='contacts.php#{$_POST['id']}'><<- Contacts</a></div>";
   }
 }
 /**
@@ -223,14 +224,20 @@ function action_buttons($id, $actions = null){
   if(! isset($actions)){
     $actions = array('update', 'delete');
   }
+  // if(isset($first_name) && isset($last_name)){
+  //   echo "<div><h1>$last_name, $first_name</h1></div>";
+  // }else{
+  //   echo "No Name.";
+  // }
  echo "<div class='data'/>";
   foreach($actions as $action){
       $action_button = ucfirst($action);//ucfirst()` capitalizes the first letter in a string.
       echo "<form action='contact.php' method='POST' name='{$id}_$action' class='button-action'>";
       echo "<input type='hidden' name='action' value='$action'/>";
       echo "<input type='hidden' name='id' value='{$id}'/>";
-      echo "<input type='submit' name='submit' value='$action_button'/>";
+      echo "<input type='submit' name='submit' value='$action_button' class='sctcc-button'/>";
       echo "</form>";
+
     }
 echo "</div>";
 }
