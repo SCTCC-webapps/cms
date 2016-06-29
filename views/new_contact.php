@@ -11,7 +11,7 @@ if(isset($_POST['action'])){
   if(isset($_POST['id'])  || $_POST['action'] === 'add'){
     // list of data feilds in incoming POST request data, excluding the category array.
     $fields = array("first_name", "last_name", "email_address", "phone_number",
-                      "street_address", "city", "state", "zip", 'country', "company");
+                      "street_address", "city", "state", "zip", "company");
 
 
     // prepare the data array and loop through the POST feilds.

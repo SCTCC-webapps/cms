@@ -19,7 +19,6 @@
   *              [city] => Charlottetown
   *              [state] => PE
   *              [zip] => C0W 2Z2
-  *              [country] => Canada
   *              [company] => Ante Ipsum Limited
   *              [cat_array] => Array
   *                  (
@@ -40,7 +39,6 @@
   *              [city] => Fairbanks
   *              [state] => Alaska
   *              [zip] => 99712
-  *              [country] => United States
   *              [company] => Orci Lacus LLC
   *              [cat_array] => Array
   *                  (
@@ -82,7 +80,6 @@ function get_contacts_with_categories_no_search($show_deleted = 0){
                 cms_contact.city,
                 cms_contact.state,
                 cms_contact.zip,
-                cms_contact.country,
                 cms_contact.company,
                 cms_cat.cat_desc,
                 cms_contact_categories.cms_cat_id
@@ -91,14 +88,12 @@ function get_contacts_with_categories_no_search($show_deleted = 0){
               ON cms_contact.cms_id = cms_contact_categories.cms_id
               INNER JOIN cms_cat
               ON cms_cat.cat_id = cms_contact_categories.cat_id';
-  $where = " WHERE soft_delete = 1";
+  $where = " WHERE soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
   try{
     $db = connect();
     $query;
-    if($show_deleted == 0){
-      $query = $db->prepare($sql.$order_by);
-    }elseif($show_deleted == 1){
+    if(isset($show_deleted)){
       $query = $db->prepare($sql.$where.$order_by);
     }else{
       $query = $db->prepare($sql.$order_by);
@@ -133,7 +128,6 @@ function get_contact_with_categories_by_id($id){
                 cms_contact.city,
                 cms_contact.state,
                 cms_contact.zip,
-                cms_contact.country,
                 cms_contact.company,
                 cms_cat.cat_desc,
                 cms_contact_categories.cms_cat_id
@@ -208,7 +202,6 @@ function group_data(PDOStatement $query){
         'city' => $row['city'],
         'state' => $row['state'],
         'zip' => $row['zip'],
-        'country' => $row['country'],
         'company' => $row['company'],
         'cat_array'=> $categories
       );
@@ -279,7 +272,6 @@ function table_display_full(array $data){
           "<th>Street Address</th>".
           "<th>City</th>".
           "<th>State</th>".
-          "<th>Country</th>".
           "<th>Company</th>".
           "<th>Categories</th>".
         "</tr>";
@@ -292,7 +284,6 @@ function table_display_full(array $data){
     echo "<td>{$row['street_address']}</td>";
     echo "<td>{$row['city']}</td>";
     echo "<td>{$row['state']}</td>";
-    echo "<td>{$row['country']}</td>";
     echo "<td>{$row['company']}</td>";
     echo "<td><ul>";
     foreach($row['cat_array'] as $cat){
@@ -335,7 +326,6 @@ function crud_contact(array $data, $action){
             city,
             state,
             zip,
-            country,
             company) VALUES (
             :first_name,
             :last_name,
@@ -345,7 +335,7 @@ function crud_contact(array $data, $action){
             :city,
             :state,
             :zip,
-            :country,
+
             :company);";
   $update ="UPDATE cms_contact SET
             first_name=:first_name,
@@ -356,7 +346,6 @@ function crud_contact(array $data, $action){
             city=:city,
             state=:state,
             zip=:zip,
-            country=:country,
             company=:company";
   $delete = "DELETE FROM cms_contact";
   $soft_delete = "UPDATE cms_contact SET soft_delete = 1";
@@ -386,7 +375,6 @@ $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
         'city' => $data['city'],
         'state' => $data['state'],
         'zip' => $data['zip'],
-        'country' => $data['country'],
         'company' => $data['company'],
         'cms_id' => $data['cms_id']
       ]);
@@ -421,7 +409,6 @@ $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
       'city' => $data['city'],
       'state' => $data['state'],
       'zip' => $data['zip'],
-      'country' => $data['country'],
       'company' => $data['company']
     ]);
     // get cms_id from insert
@@ -468,7 +455,6 @@ function redirect($url){
 //             city,
 //             state,
 //             zip,
-//             country,
 //             company)
 //     values( :first_name,
 //             :last_name,
@@ -478,7 +464,6 @@ function redirect($url){
 //             :city,
 //             :state,
 //             :zip,
-//             :country,
 //             :company);";
 //   try{
 //     $db = connect();
@@ -491,7 +476,6 @@ function redirect($url){
 //         'street_address' => $data['street_address'],
 //         'city' => $data['city'],
 //         'state' => $data['state'],
-//         'country' => $data['country'],
 //         'company' => $data['company'],
 //         'id' => $data['id']
 //       ]);

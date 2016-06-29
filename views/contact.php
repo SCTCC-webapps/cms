@@ -20,7 +20,6 @@ require 'layout/footer.php';
     "city",
     "state",
     "zip",
-    "country",
     "company"
   );
   //How the fields are labeled.
@@ -33,7 +32,6 @@ require 'layout/footer.php';
     "city" => 'City',
     "state" => 'State',
     "zip" => 'ZIP Code',
-    "country" => 'Country',
     "company" => 'Company'
   );
 
@@ -204,13 +202,27 @@ function delete_or_view(array $data, $action = 'view'){
   echo "</table>";
   if(isset($_POST['id']) && $action == 'delete'){
     echo "<div clas= 'data'>";
-    echo "<form action='new_contact.php' method='post'>";
+    echo "<form action='new_contact.php' method='post' id='delete-form'
+    onsubmit='return confirm(\"Are you sure you want to delete this contact?\")'>";
     echo "<input type='hidden' name='action' value='delete'/>";
     echo "<input type='hidden' name='id' value='{$_POST['id']}'/>";
   //  echo "<label for='submit'>If you delete this contact, this action CANNOT be undone:</label>";
+    //echo "<button class='delete-button' onclick='deleteTest'>Delete Contact</button>";
     echo "<input type='submit' name='submit' value='Delete Contact' class='delete-button'/>";
     echo "</form>";
     echo "</div>";
+//     echo <<<EOS
+//     <script>
+//       function deleteTest(id){
+//         if(confirm("Are you sure you want to delete this contact?")){
+//           alert("Confirmed.")
+//           //document.getElementById("delete-form").submit();
+//         }else{
+//           alert("No confirmation");
+//         }
+//       }
+//     </script>
+// EOS;
   }else{
     echo "<div class='align-left'><a href='contacts.php#{$_POST['id']}'><<- Contacts</a></div>";
   }
