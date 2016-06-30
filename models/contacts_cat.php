@@ -68,7 +68,7 @@ require 'db-connect.php';
   * soft_deleted(1) records or normal(0) records. Defaults to 0.
   * @return $data associtiive array of the contacts with subarry for categories
   */
-function get_contacts_with_categories_no_search($show_deleted = 0){
+function get_contacts_with_categories($show_deleted = 0, $name = null, $company = null, $category = null){
   //define the query
   $sql = 'SELECT
                 cms_contact.cms_id,
@@ -90,6 +90,15 @@ function get_contacts_with_categories_no_search($show_deleted = 0){
               ON cms_cat.cat_id = cms_contact_categories.cat_id';
   $where = " WHERE soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
+  if(isset($name)){
+    $where .= "&& first_name = $name || last_name = $name";
+  }
+  if(isset($company)){
+    $where .= "&& company = $company";
+  }
+  if(isset($category)){
+    $where .= "&& category = $category";
+  }
   try{
     $db = connect();
     $query;
