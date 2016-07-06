@@ -25,22 +25,25 @@ function write_header(string $custom_code = null)
         echo "<div class='align-left'><a href='contacts.php#{$_POST['id']}'><<- Contacts</a></div>";
     }
     echo "<img src='img/sctcc_logo.png' id='img_header'/>";
-    echo "<form action='contacts.php' method='post' >";
-      echo "<input type='text' name='text'/>";
+    nav_bar_and_search();
+}
+function nav_bar_and_search(){
+  echo "<form action='contacts.php' method='post' >";
+    echo "<input type='text' name='search'/>";
 
-      echo "<label for='search-by'/>";
-      echo "<select name='search-by'>";
-        echo "<option value='name'>Name</option>";
-        echo "<option value='company'>Company</option>";
-      echo "</select>";
+    echo "<label for='search-by'>Search By:</label>";
+    echo "<select name='search-by'>";
+      echo "<option value='name'>Name</option>";
+      echo "<option value='company'>Company</option>";
+    echo "</select>";
 
-      echo "<label for='catetgories'/>";
-      echo "<select name='categories'>";
-      $cats = list_all_categories();
-      foreach($cats as $id => $cat){
-        echo "<option value='{$id}'>$cat</option>";
-      }
-      echo "</select>";
-      echo "<input type='submit value='Search'/>";
-    echo "</form>";
+    echo "<label for='catetgory'>Category:</label>";
+    echo "<select name='category'>";
+    $cats = list_all_categories();
+    foreach($cats as $id => $cat){
+      echo "<option value='{$id}'>$cat</option>";
+    }
+    echo "</select>";
+    echo "<input type='submit' value='Search'/>";
+  echo "</form>";
 }

@@ -68,7 +68,7 @@ require 'db-connect.php';
   * soft_deleted(1) records or normal(0) records. Defaults to 0.
   * @return $data associtiive array of the contacts with subarry for categories
   */
-function get_contacts_with_categories($show_deleted = 0, $name = null, $company = null, $category = null){
+function get_contacts_with_categories($show_deleted = 0, $search = null, $search_by= null, $category = null){
   //define the query
   $sql = 'SELECT
                 cms_contact.cms_id,
@@ -90,14 +90,17 @@ function get_contacts_with_categories($show_deleted = 0, $name = null, $company 
               ON cms_cat.cat_id = cms_contact_categories.cat_id';
   $where = " WHERE soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
-  if(isset($name)){
-    $where .= "&& first_name = $name || last_name = $name";
-  }
-  if(isset($company)){
-    $where .= "&& company = $company";
+  if(isset($search)){
+    if($search_by == 'name'){
+      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+    }elseif($search_by == 'company'){
+      $where .= "&& company LIKE '%$search%'";
+    }else{
+      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+    }
   }
   if(isset($category)){
-    $where .= "&& category = $category";
+    $where .= "&& cms_cat.cat_id = $category";
   }
   try{
     $db = connect();
@@ -453,53 +456,5 @@ function list_all_categories(){
 function redirect($url){
   header("Location:http://localhost/".$url);
 }
-// function add_contact_cat(array $data){
-//   $contact_cms_sql = "insert into cms_contact_categories(cms_id, cat_id) values(:cms_id, :cat_id);";
-//   $contact_sql =
-//   "(insert into cms_contact(first_name,
-//             last_name,
-//             phone_number,
-//             email_address,
-//             street_address,
-//             city,
-//             state,
-//             zip,
-//             company)
-//     values( :first_name,
-//             :last_name,
-//             :phone_number,
-//             :email_address,
-//             :street_address,
-//             :city,
-//             :state,
-//             :zip,
-//             :company);";
-//   try{
-//     $db = connect();
-//     $query = $db->prepare($contact_sql);
-//     $result = $query->execute(
-//       [ 'first_name' => $data['first_name'],
-//         'last_name' => $data['last_name'],
-//         'phone_number' => $data['phone_number'],
-//         'email_address' => $data['email_address'],
-//         'street_address' => $data['street_address'],
-//         'city' => $data['city'],
-//         'state' => $data['state'],
-//         'company' => $data['company'],
-//         'id' => $data['id']
-//       ]);
-//     $id = PDO::lastInsertID();
-//
-//     $query = $db->prepare($contact_cms_sql);
-//     foreach($data['cat_array'] as $cat){
-//       $cat_id = $cat['cat_id'];
-//       $result = $query->execute(['cms_id' => $id, 'cat_id'=> $cat_id]);
-//       return true;
-//     }
-//   }catch(PDOException $e){
-//     log_or_echo(false, $e);
-//     return false;
-//   }
-// }
 
 ?>

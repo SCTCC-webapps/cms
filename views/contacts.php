@@ -7,21 +7,22 @@
   require 'layout/header.php';
   require 'layout/footer.php';
 
-  $name = null;
-  $company = null;
+  $search = null;
+  $search_by = null;
   $category = null;
-  if(isset($_POST['name'])){
-    $name = $_POST['name'];
+  if(isset($_POST['search'])){
+    $search = $_POST['search'];
   }
-  if(isset($_POST['company'])){
-    $company = $_POST['company'];
+  if(isset($_POST['search-by'])){
+    $search_by = $_POST['search-by'];
   }
   if(isset($_POST['category'])){
-    $company = $_POST['category'];
+    $category = $_POST['category'];
   }
 
   write_header();
   echo "<h3>Contacts List</h3>";
-  table_display(get_contacts_with_categories(0, $name, $company, $category));
+  echo "Search: $search Search By: $search_by Category: $category";
+  table_display(get_contacts_with_categories(0, $search, $search_by, $category));
   write_footer();
   ?>
