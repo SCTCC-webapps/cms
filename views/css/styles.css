@@ -38,8 +38,12 @@ form span {
     color: red;
     font-size: 150%;
 }
+
 .data{
   text-align: left;
+}
+.center{
+  text-align: center;
 }
 .align-left{
   text-align: left;

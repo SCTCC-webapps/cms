@@ -44,6 +44,6 @@ function nav_bar_and_search(){
       echo "<option value='{$id}'>$cat</option>";
     }
     echo "</select>";
-    echo "<input type='submit' value='Search'/>";
+    echo "<input type='submit' value='Search' class='sctcc-button'/>";
   echo "</form>";
 }

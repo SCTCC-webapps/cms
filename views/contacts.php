@@ -22,7 +22,6 @@
 
   write_header();
   echo "<h3>Contacts List</h3>";
-  echo "Search: $search Search By: $search_by Category: $category";
   table_display(get_contacts_with_categories(0, $search, $search_by, $category));
   write_footer();
   ?>
