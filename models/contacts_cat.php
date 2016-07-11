@@ -452,7 +452,38 @@ function list_all_categories(){
   }catch(PDOException $e){
     log_or_echo(false, $e);
   }
-};
+}
+function cat_crud($action = null, $id = null, $desc = null){
+  $insert = "INSERT INTO cms_cat(cat_id, cat_desc) VALUES (:cat_id, :cat_desc)";
+  $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
+  $delete = "DELETE FROM cms_cat";
+  $where = " WHERE cms_id = :cms_id";
+  try{
+    $db = connect();
+    $query;
+    if(isset($action) && isset($id)){
+      if($action == 'update' && isset($desc)){
+          $query = $db->prepare($update.$where);
+          $result = $query->execute(['cat_id' => $id, 'cat_desc' => $desc]);
+      }
+      elseif($action == 'delete'){
+        $query = $db->prepare($update.$where);
+        $result = $query->execute(['cat_id' => $id]);
+      }
+
+    }elseif(isset($action) && isset($desc)){
+      if($action == 'insert'){
+        $query = $db->prepare($update.$where);
+        $result = $query->execute(['cat_id' => $id, 'cat_desc' => $desc]);
+      }
+    }else{
+
+    }
+
+  }catch(PDOException $e){
+    log_or_echo($e);
+  }
+}
 function redirect($url){
   header("Location:http://localhost/".$url);
 }

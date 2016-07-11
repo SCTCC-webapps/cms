@@ -42,11 +42,21 @@ form span {
 .data{
   text-align: left;
 }
+.full-width{
+  width: 100%
+}
 .center{
   text-align: center;
 }
+.center-element{
+  text-align: center;
+  margin: auto;
+}
 .align-left{
   text-align: left;
+}
+.align-right{
+  text-align: right;
 }
 .button-align-center{
   text-align: center;
@@ -70,7 +80,23 @@ form span {
   box-shadow: 0 5px 5px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
   border-color: rgb(128, 0, 0);
 }
-
+.inline-form{
+  display: inline-block;
+}
+.four-col{
+  column-count: 4;
+    -webkit-column-count: 4; /* Chrome, Safari, Opera */
+    -moz-column-count: 4; /* Firefox */
+  column-gap: 1px;
+    -webkit-column-gap: 1px; /* Chrome, Safari, Opera */
+    -moz-column-gap: 1px; /* Firefox */
+  column-width: 40px;
+    -webkit-column-width: 40px;
+    -moz-column-width: 40px;
+}
+.four-col div{
+  break-before: column;
+}
 .three-col{
   column-count: 3;
     -webkit-column-count: 3; /* Chrome, Safari, Opera */

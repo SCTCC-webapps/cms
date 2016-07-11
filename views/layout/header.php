@@ -25,19 +25,21 @@ function write_header(string $custom_code = null)
         echo "<div class='align-left'><a href='contacts.php#{$_POST['id']}'><<- Contacts</a></div>";
     }
     echo "<img src='img/sctcc_logo.png' id='img_header'/>";
+    echo "<div>";
     nav_bar_and_search();
+    echo "</div>";
 }
 function nav_bar_and_search(){
-  echo "<form action='contacts.php' method='post' >";
+  echo "<form action='contacts.php' method='post'>";
+    echo "<label for='search'>Search:</label>";
     echo "<input type='text' name='search'/>";
 
-    echo "<label for='search-by'>Search By:</label>";
+    echo "<label for='search-by'> &nbsp; Search By:</label>";
     echo "<select name='search-by'>";
       echo "<option value='name'>Name</option>";
       echo "<option value='company'>Company</option>";
     echo "</select>";
-
-    echo "<label for='catetgory'>Category:</label>";
+    echo "<label for='catetgory'>&nbsp; Category:</label>";
     echo "<select name='category'>";
     $cats = list_all_categories();
     foreach($cats as $id => $cat){
