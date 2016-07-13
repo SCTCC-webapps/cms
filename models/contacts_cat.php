@@ -453,8 +453,8 @@ function list_all_categories(){
     log_or_echo(false, $e);
   }
 }
-function cat_crud($action = null, $id = null, $desc = null){
-  $insert = "INSERT INTO cms_cat(cat_id, cat_desc) VALUES (:cat_id, :cat_desc)";
+function crud_cat($action = null, $id = null, $desc = null){
+  $insert = "INSERT INTO cms_cat(cat_desc) VALUES (:cat_desc)";
   $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
   $delete = "DELETE FROM cms_cat";
   $where = " WHERE cms_id = :cms_id";
@@ -464,20 +464,26 @@ function cat_crud($action = null, $id = null, $desc = null){
     if(isset($action) && isset($id)){
       if($action == 'update' && isset($desc)){
           $query = $db->prepare($update.$where);
-          $result = $query->execute(['cat_id' => $id, 'cat_desc' => $desc]);
+          $result = $query->execute(['cat_desc' => $desc, 'cat_id' => $id]);
       }
       elseif($action == 'delete'){
-        $query = $db->prepare($update.$where);
+        $query = $db->prepare($delete.$where);
         $result = $query->execute(['cat_id' => $id]);
+      }else{
+        echo "redirect 1:update/delete";
+        //redirect("sctcc/views/categories.php");
       }
-
     }elseif(isset($action) && isset($desc)){
       if($action == 'insert'){
-        $query = $db->prepare($update.$where);
-        $result = $query->execute(['cat_id' => $id, 'cat_desc' => $desc]);
+        $query = $db->prepare($insert);
+        $result = $query->execute(['cat_desc' => $desc]);
+      }else{
+        echo "redirct 2: insert";
+        //redirect("sctcc/views/categories.php");
       }
     }else{
-
+      echo "redirect 3: general";
+    //  redirect("sctcc/views/categories.php");
     }
 
   }catch(PDOException $e){

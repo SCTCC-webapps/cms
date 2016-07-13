@@ -5,7 +5,36 @@ require "layout/footer.php";
 
 //echo "above header";
 write_header();
-list_cats();
+if(isset($_POST['action'])){
+  $action = $_POST['action'];
+  if($action == 'insert'){
+    if(isset($_POST['desc'])){
+      crud_cat($action, null, $_POST['desc']);
+      echo "<div>".$_POST['desc']."</div>";
+    }
+    list_cats();
+  }elseif($action == 'edit' && isset($_POST['id'])){
+    $cat = list_all_categories();
+    $id = $_POST['id'];
+    echo <<<EOD
+    <div>
+      <form action='categories.php' method='POST'>
+        <label for="desc">Category Name</label>
+        <input type='text' name='desc' value='{$cat[$id]}'></input>
+        <input type='hidden' name='id' value='$id'/>
+        <input type='hidden' name='action' value='update'/>
+        <input type='submit' name='submit' value='Submit'/>
+      </form>
+    </div>
+EOD;
+  }elseif($action == 'update' && (isset($_POST['id']) && isset($_POST['desc']))){
+    crud_cat($action, $_POST['id'], $_POST['desc']);
+  }elseif($action == 'delete' && isset($_POST['id'])){
+    crud_cat($action, $_POST['id']);
+  }
+}else{
+  list_cats();
+}
 write_footer();
 
 function list_cats(){
@@ -16,10 +45,11 @@ echo "<h1>Categories</h1><hr/>";
   echo "<tr>";
     echo "<form method='POST' action='categories.php'>";
     echo "<td class='align-left full-width'>";
-      echo "<input type='text' name='new_cat' class=''/>";
+      echo "<input type='text' name='desc' class=''/>";
     echo "</td>";
     echo "<td class='align-right' colspan='2'>";
-      echo "<input type='submit' value='Add New Category' class='full-width sctcc-button'/>";
+      echo "<input type='hidden' name='action' value='insert'/>";
+      echo "<input type='submit' name='submit' value='Add New Category' class='full-width sctcc-button'/>";
     echo "</td>";
     echo "</form>";
 
