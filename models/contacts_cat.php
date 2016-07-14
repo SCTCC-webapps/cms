@@ -457,7 +457,8 @@ function crud_cat($action = null, $id = null, $desc = null){
   $insert = "INSERT INTO cms_cat(cat_desc) VALUES (:cat_desc)";
   $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
   $delete = "DELETE FROM cms_cat";
-  $where = " WHERE cms_id = :cms_id";
+  $where = " WHERE cat_id = :cat_id";
+  $remove_relations = "DELETE FROM cms_contact_categories";
   try{
     $db = connect();
     $query;
@@ -467,6 +468,8 @@ function crud_cat($action = null, $id = null, $desc = null){
           $result = $query->execute(['cat_desc' => $desc, 'cat_id' => $id]);
       }
       elseif($action == 'delete'){
+        $query = $db->prepare($remove_relations.$where);
+        $result = $query->execute(['cat_id' => $id]);
         $query = $db->prepare($delete.$where);
         $result = $query->execute(['cat_id' => $id]);
       }else{

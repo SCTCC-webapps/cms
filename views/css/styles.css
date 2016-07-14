@@ -84,32 +84,59 @@ form span {
   display: inline-block;
 }
 .four-col{
-  column-count: 4;
-    -webkit-column-count: 4; /* Chrome, Safari, Opera */
-    -moz-column-count: 4; /* Firefox */
-  column-gap: 1px;
-    -webkit-column-gap: 1px; /* Chrome, Safari, Opera */
-    -moz-column-gap: 1px; /* Firefox */
-  column-width: 40px;
-    -webkit-column-width: 40px;
-    -moz-column-width: 40px;
+  -webkit-column-count: 4; /* Chrome, Safari, Opera */
+  -moz-column-count: 4; /* Firefox */
+  -ms-column-count: 4; /* Edge/IE */
+column-count: 4;
+  -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
+  -moz-column-gap: 40px; /* Firefox */
+  -ms-column-gap: 40px; /* Edge/IE */
+column-gap: 40px;
 }
 .four-col div{
   break-before: column;
 }
 .three-col{
-  column-count: 3;
-    -webkit-column-count: 3; /* Chrome, Safari, Opera */
-    -moz-column-count: 3; /* Firefox */
-  column-gap: 40px;
-    -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
-    -moz-column-gap: 40px; /* Firefox */
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  -ms-column-count: 3; /* Edge/IE */
+column-count: 3;
+  -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
+  -moz-column-gap: 40px; /* Firefox */
+  -ms-column-gap: 40px; /* Edge/IE */
+column-gap: 40px;
 }
 .two-col{
-  column-count: 2;
     -webkit-column-count: 2; /* Chrome, Safari, Opera */
     -moz-column-count: 2; /* Firefox */
-  column-gap: 40px;
+    -ms-column-count: 2; /* Edge/IE */
+  column-count: 2;
     -webkit-column-gap: 40px; /* Chrome, Safari, Opera */
     -moz-column-gap: 40px; /* Firefox */
+    -ms-column-gap: 40px; /* Edge/IE */
+  column-gap: 40px;
+}
+
+#message{
+
+}
+.greenmessage{
+  border-style: solid;
+  border-top: 3px solid;
+  border-bottom: 3px solid;
+  border-left: none;
+  border-right: none;
+  border-top-color: rgb(0, 102, 0);
+  border-bottom-color: rgb(0, 102, 0);
+  background-color: rgb(204, 255, 153);
+}
+.red-message{
+  border-style: solid;
+  border-top: 3px solid;
+  border-bottom: 3px solid;
+  border-left: none;
+  border-right: none;
+  border-top-color: rgb(255, 0, 0);
+  border-bottom-color: rgb(255, 0, 0) ;
+  background-color: rgb(255, 153, 153);
 }

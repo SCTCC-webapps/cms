@@ -10,9 +10,9 @@ if(isset($_POST['action'])){
   if($action == 'insert'){
     if(isset($_POST['desc'])){
       crud_cat($action, null, $_POST['desc']);
-      echo "<div>".$_POST['desc']."</div>";
+      //echo "<div>".$_POST['desc']."</div>";
     }
-    list_cats();
+    list_cats("Category '{$_POST['desc']}' added!", "greenmessage");
   }elseif($action == 'edit' && isset($_POST['id'])){
     $cat = list_all_categories();
     $id = $_POST['id'];
@@ -28,17 +28,22 @@ if(isset($_POST['action'])){
     </div>
 EOD;
   }elseif($action == 'update' && (isset($_POST['id']) && isset($_POST['desc']))){
+    $cats = list_all_categories();
     crud_cat($action, $_POST['id'], $_POST['desc']);
+
+    list_cats("Category '{$cats[$_POST['id']]}' was renamed to '{$_POST['desc']}'!", "greenmessage");
   }elseif($action == 'delete' && isset($_POST['id'])){
+    $cats = list_all_categories();
     crud_cat($action, $_POST['id']);
+    list_cats("Category '{$cats[$_POST['id']]}' was deleted!", "redmessage");
   }
 }else{
   list_cats();
 }
 write_footer();
 
-function list_cats(){
-
+function list_cats($response = null, $header_style = null){
+  echo "<div id = 'message' class = '$header_style'>$response</div>";
   $cats = list_all_categories();
 echo "<h1>Categories</h1><hr/>";
   echo "<table class='center-element'>";
