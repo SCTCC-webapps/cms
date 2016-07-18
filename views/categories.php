@@ -16,15 +16,22 @@ if(isset($_POST['action'])){
   }elseif($action == 'edit' && isset($_POST['id'])){
     $cat = list_all_categories();
     $id = $_POST['id'];
+    $form_name = "rename";
     echo <<<EOD
     <div>
-      <form action='categories.php' method='POST'>
+      <form action='categories.php' method='POST' name="$form_name">
         <label for="desc">Category Name</label>
         <input type='text' name='desc' value='{$cat[$id]}'></input>
         <input type='hidden' name='id' value='$id'/>
         <input type='hidden' name='action' value='update'/>
         <input type='submit' name='submit' value='Submit'/>
       </form>
+      <script language="JavaScript" type="text/javascript">
+        var frmValidator = new Validator("$form_name");
+        frmValidator.EnableMsgsTogether();
+
+        frmValidator.addValidation("desc", "req", "Please add a category name. ");
+      </script>
     </div>
 EOD;
   }elseif($action == 'update' && (isset($_POST['id']) && isset($_POST['desc']))){
@@ -68,8 +75,9 @@ echo "<h1>Categories</h1><hr/>";
         echo "<input type='hidden' name='id' value='$id'/>";
         echo "<input type='submit' value='Rename' class='sctcc-button'>";
         echo "</form>";
+
       echo "</td><td class='align-right'>";
-      echo "<form method='POST' action='categories.php'/>";
+      echo "<form method='POST' action='categories.php'/ onsubmit='return confirm(\"Are you sure you want to delete this category? Once you delete a category, it cannot be recovered\")>";
         echo "<input type='hidden' name='action' value='delete'/>";
         echo "<input type='hidden' name='id' value='$id'/>";
         echo "<input type='submit' value='Delete' class='sctcc-button'>";
