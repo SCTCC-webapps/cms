@@ -25,10 +25,56 @@ function list_all_categories(){
  * TODO: Write a function with repeated calls to get_contact_with_categories_by_id()
  * that will return all the relevant results grouped and in order.
  */
+
  function get_contact_id_search($show_deleted = 0, $search = null, $search_by = null, $category = null, $limit = 50, $offset = 0){
+
    //Reference: http://stackoverflow.com/questions/10015364/pagination-sql-query-syntax
    //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
- }
+   $sql = 'SELECT
+                cms_contact.cms_id
+                FROM cms_contact
+                INNER JOIN cms_contact_categories
+                ON cms_contact.cms_id = cms_contact_categories.cms_id
+                INNER JOIN cms_cat
+                ON cms_cat.cat_id = cms_contact_categories.cat_id';
+  $where = 'WHERE soft_delete = :show_deleted';
+  $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
+  $limit_offset = 'LIMIT :limit OFFSET :offset';
+  $parameters = [':show_deleted' => $show_deleted,
+                 ':search' => $search,
+                 ':category' => $category,
+                 ':limit' => $limit,
+                 ':offset' => $offset];
+  if(isset($search)){
+    if($search_by == 'name'){
+      $where .= "&& (first_name LIKE '%:search%' || last_name LIKE '%:search%')";
+    }elseif($search_by == 'company'){
+      $where .= "&& company LIKE '%:search%'";
+    }else{
+      $where .= "&& (first_name LIKE '%:search%' || last_name LIKE '%:search%')";
+    }
+  }
+  if(isset($category)){
+    $where .= "&& cms_cat.cat_id = :category";
+  }
+  try{
+    $db = connect();
+    $query;
+    if(isset($show_deleted)){
+      $query = $db->prepare($sql.$where.$order_by.$limit_offset);
+    }else{
+      $query = $db->prepare($sql.$order_by.$limit_offset);
+    }
+
+    $result_set = $query->execute($parameters);
+    //After this point code changes to accomodate new core.
+    /*TODO: Loop through the results of the query.
+     *Pass each id into get_contact_with_categories_by_id()
+     *and return into an enclosing array.
+     */
+    //$data = group_data($query);
+    $db = null;
+    return $data;}
 function get_contacts_with_categories($show_deleted = 0, $search = null, $search_by= null, $category = null){
   //define the query
   $sql = 'SELECT
