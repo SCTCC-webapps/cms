@@ -108,6 +108,7 @@ function add_or_update(array $data = null, $action = 'add'){
       $data[$field] = null;
     }
   }else {
+    //This function seems to have been implement to remove a quirk in the get_contact_with_categories_by_id() //function that returns an encapsulating array. 
     $data = current($data);
   }
   echo "<form action='new_contact.php' method='post' name='add_or_update' class = 'data'>";

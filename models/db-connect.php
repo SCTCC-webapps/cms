@@ -15,7 +15,7 @@ function connect(){
   $pass = 'Pa$$w0rd';
 
   return new PDO("mysql:host=$db_host;dbname=$db_name;",$user, $pass,
-     array( PDO::ATTR_PERSISTENT => true));
+     array( PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => true, PDO::ERRMODE_EXCEPTION => true));
 }
 /**
   * This function provides a global control to switch between logging
@@ -24,7 +24,7 @@ function connect(){
   * @param $override override logging behavior if enabled and echo.
   * @param PDOExcepttion $e The PDOException being logged/echoed.
   */
-function log_or_echo($overide, PDOException $e){
+function log_or_echo($overide = false, PDOException $e){
   $mode = "echo";
   if($mode = "echo" || $override == true) {
     echo $e->getMessage()."<br/>";

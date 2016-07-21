@@ -167,6 +167,15 @@ function get_contact_with_categories_by_id($id){
   * This function groups data from the contacts table into an array.
   * Each record has it's associated categories in a sub-array.
   *
+  * @param PDOStatement $query  A PDO object that contains a query.
+  * @return array $data An array of contacts with categories grouped.
+  */
+
+
+/**
+  * This function groups data from the contacts table into an array.
+  * Each record has it's associated categories in a sub-array.
+  *
   * @param PDOStatement $query A PDO object that contains a query.
   * @return array $data An array of contacts with categories grouped.
   */
