@@ -33,17 +33,15 @@ echo "</pre>";
    //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
    $sql = 'SELECT
                 cms_contact.cms_id
-                FROM cms_contact
-                INNER JOIN cms_contact_categories
-                ON cms_contact.cms_id = cms_contact_categories.cms_id
-                INNER JOIN cms_cat
-                ON cms_cat.cat_id = cms_contact_categories.cat_id';
+                FROM cms_contact';
   $where = " WHERE cms_contact.soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name LIMIT $limit OFFSET $offset";
   //$limit_offset = ' LIMIT :limit OFFSET :offset';
-  //'limit' => $limit,
-  //'offset' => $offset
-  $parameters = ['show_deleted' => $show_deleted];
+  $parameters = array();
+  //$parameters['limit'] = $limit;
+  //$parameters['offset'] = $offset;
+  //$parameters['show_deleted'] = $show_deleted;
+
   if(isset($search)){
     if($search_by == 'name'){
       $where .= "&& (first_name LIKE '%:f_search%' || last_name LIKE '%:l_search%')";
@@ -75,7 +73,9 @@ echo "</pre>";
     //$data = group_data($query);
 
     for($i = 0; $row = $query->fetch(); $i++){
-      $data[$i] = current(get_contact_with_categories_by_id($row['cms_id']));
+      echo "CMS ID: {$row['cms_id']}\n";
+      $data[$i] = get_contact_categories($row['cms_id']);
+      //current(get_contact_with_categories_by_id($row['cms_id']));
       // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
       // print_r(get_contact_with_categories_by_id($row['cms_id']));
       // echo "</pre>";
@@ -104,7 +104,7 @@ echo "</pre>";
   * @param $id the id of the contact
   * @return $data associtiive array of the contacts with subarry for categories
   */
-function get_contact_with_categories_by_id($id){
+function get_contact_categories($id){
   //echo "$id</br>";
   //define the query
   $sql = 'SELECT
@@ -117,23 +117,44 @@ function get_contact_with_categories_by_id($id){
                 cms_contact.city,
                 cms_contact.state,
                 cms_contact.zip,
-                cms_contact.company,
-                cms_cat.cat_desc,
-                cms_contact_categories.cms_cat_id
+                cms_contact.company
               FROM cms_contact
-              INNER JOIN cms_contact_categories
-              ON cms_contact.cms_id = cms_contact_categories.cms_id
-              INNER JOIN cms_cat
-              ON cms_cat.cat_id = cms_contact_categories.cat_id
               WHERE cms_contact.cms_id = :cms_id
               ORDER BY cms_contact.last_name, cms_contact.first_name';
+  $cat_sql = 'SELECT
+                    cms_contact_categories.cms_id,
+                    cms_contact_categories.cms_cat_id,
+                    cms_cat.cat_id,
+                    cms_cat.cat_desc
+                  FROM cms_contact_categories
+                  INNER JOIN cms_cat
+                  ON cms_contact_categories.cat_id = cms_cat.cat_id
+                  WHERE cms_contact_categories.cms_id = :id';
   try{
     $db = connect();
     $query = $db->prepare($sql);
     $result_set = $query->execute(["cms_id" => $id]);
     //return "<pre>".print_r($raw_data, true)."</pre>";
-
-    $data = group_data($query);
+    $contact = $query->fetch();
+    $data = ['id' => $contact['cms_id'],
+            'first_name' => $contact['first_name'],
+            'last_name' => $contact['last_name'],
+            'phone_number' => $contact['phone_number'],
+            'email_address' => $contact['email_address'],
+            'street_address' => $contact['street_address'],
+            'city' => $contact['city'],
+            'state' => $contact['state'],
+            'zip' =>$contact['zip'],
+            'company' =>$contact['company']];
+    $cat_array = array();
+    $query = $db->prepare($cat_sql);
+    $query->execute(['id'=>$id]);
+    for($i = 0; $row = $query->fetch();$i++){
+      $cms_cat_id = $row['cms_cat_id'];
+      $cat_array[$cms_cat_id] = $row['cat_desc'];
+    }
+    $data['cat_array'] = $cat_array;
+    //group_data($query);
     // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
     // print_r($data);
     // echo "</pre>";
@@ -144,19 +165,19 @@ function get_contact_with_categories_by_id($id){
     log_or_echo(false, $e.getMessage());
   }
 }
-function group_data(PDOStatement $query){
-  $data = array();
-  for($i = 0; $row = $query->fetch(); $i++){
-    try{
-      $db = connect();
-      $sql = "SELECT cms_cat."
-    }
-
-    $data[$i] = $row;
-    
-  }
-
-}
+// function group_data(PDOStatement $query){
+//   $data = array();
+//   for($i = 0; $row = $query->fetch(); $i++){
+//     try{
+//       $db = connect();
+//       $sql = "SELECT cms_cat."
+//     }
+//
+//     $data[$i] = $row;
+//
+//   }
+//
+// }
 function get_contacts_with_categories($show_deleted = 0, $search = null, $search_by= null, $category = null){
   //define the query
   $sql = 'SELECT

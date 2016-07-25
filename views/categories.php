@@ -55,7 +55,7 @@ function list_cats($response = null, $header_style = null){
 echo "<h1>Categories</h1><hr/>";
   echo "<table class='center-element'>";
   echo "<tr>";
-    echo "<form method='POST' action='categories.php'>";
+    echo "<form method='POST' action='categories.php' name='insert'>";
     echo "<td class='align-left full-width'>";
       echo "<input type='text' name='desc' class=''/>";
     echo "</td>";
@@ -64,7 +64,13 @@ echo "<h1>Categories</h1><hr/>";
       echo "<input type='submit' name='submit' value='Add New Category' class='full-width sctcc-button'/>";
     echo "</td>";
     echo "</form>";
-
+    echo <<<EOD
+    <script language="JavaScript" type="text/javascript">
+      var frmValidator = new Validator("insert");
+      frmValidator.EnableMsgsTogether();
+      frmValidator.addValidation("desc", "req", "Please add a category name. ");
+    </script>
+EOD;
   echo "</tr>";
   foreach ($cats as $id => $cat) {
     echo "<tr>";
@@ -77,7 +83,7 @@ echo "<h1>Categories</h1><hr/>";
         echo "</form>";
 
       echo "</td><td class='align-right'>";
-      echo "<form method='POST' action='categories.php'/ onsubmit='return confirm(\"Are you sure you want to delete this category? Once you delete a category, it cannot be recovered\")>";
+      echo "<form method='POST' action='categories.php' onsubmit='return confirm(\"Are you sure you want to delete this category? Once you delete a category, it cannot be recovered\")'>";
         echo "<input type='hidden' name='action' value='delete'/>";
         echo "<input type='hidden' name='id' value='$id'/>";
         echo "<input type='submit' value='Delete' class='sctcc-button'>";
