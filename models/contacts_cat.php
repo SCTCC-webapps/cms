@@ -2,9 +2,9 @@
 /**
   * `contacts_cat.php` is a file that processes common queries pertaining
   * to the retrival of contact data with asssociated categories.
-  * It's included frequently and passes an array of data back.
+  * It's included frequently and uses an array of values to handle associated data.
   *
-  * The data usually takes the following format (example from `print_r()`):
+  * The data array takes the following format (example from `print_r()`):
   *
   *   Array
   *   (
@@ -57,78 +57,97 @@
 require 'db-connect.php';
 //These are debug statements that can be enabled to check output.
 //echo "<pre>";
-//print_r(get_contacts_with_categories_no_search());
+//print_r(get_contacts_search());
 //echo "</pre>";
 /**
-  * This function gets the data on contacts from the database,
-  * and then passes it to the data grouper,
-  * before returning the results
-  * in an associtive array.
-  * @param $show_deleted Determines if you want to display a result set of
-  * soft_deleted(1) records or normal(0) records. Defaults to 0.
-  * @return $data associtiive array of the contacts with subarry for categories
+  * This function replaces `get_contacts_with_categories()`` and uses a proper
+  * SQL grouping function `get_contact_categories()`.
+  *
+  * It searchs contact records in the database,
+  * and returns a list of matching results,
+  * with all associated data.
+  *
+  * If search parameters are not set,
+  * then the function will return
+  * all records not soft-deleted.
+  * @param Point to start records for pagination.
+  * @param Point to end records for pagination.
+  * @param $search String to look for in the database.
+  * @param $search_by Tells the function to look by contact or company name.
+  *        Valid values are 'name' or 'company'. Function behavior defaults to
+  *        searching by name if not set.
+  * @param $category The category to search for contacts in.
+  *        Search ignores category if not set.
+  * that will return all the relevant results grouped and in order.
+  * @return $data The array of contacts that match search criteria.
   */
-function get_contacts_with_categories($show_deleted = 0, $search = null, $search_by= null, $category = null){
-  //define the query
-  $sql = 'SELECT
-                cms_contact.cms_id,
-                cms_contact.first_name,
-                cms_contact.last_name,
-                cms_contact.phone_number,
-                cms_contact.email_address,
-                cms_contact.street_address,
-                cms_contact.city,
-                cms_contact.state,
-                cms_contact.zip,
-                cms_contact.company,
-                cms_cat.cat_desc,
-                cms_contact_categories.cms_cat_id
-              FROM cms_contact
-              INNER JOIN cms_contact_categories
-              ON cms_contact.cms_id = cms_contact_categories.cms_id
-              INNER JOIN cms_cat
-              ON cms_cat.cat_id = cms_contact_categories.cat_id';
-  $where = " WHERE soft_delete = $show_deleted";
-  $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
+
+ function get_contacts_search($limit = 50, $offset = 0, $search = null, $search_by = null, $category = null, $show_deleted = 0){
+
+   //Reference: http://stackoverflow.com/questions/10015364/pagination-sql-query-syntax
+   //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
+   $sql = 'SELECT
+                cms_contact.cms_id
+                FROM cms_contact';
+  $where = " WHERE cms_contact.soft_delete = $show_deleted";
+  $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name LIMIT $limit OFFSET $offset";
+  //$limit_offset = ' LIMIT :limit OFFSET :offset';
+  $parameters = array();
+  //$parameters['limit'] = $limit;
+  //$parameters['offset'] = $offset;
+  //$parameters['show_deleted'] = $show_deleted;
+
   if(isset($search)){
     if($search_by == 'name'){
-      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+      $where .= "&& (first_name LIKE '%:f_search%' || last_name LIKE '%:l_search%')";
+      $parameters['f_search' ] = $search;
+      $parameters['l_search'] = $search;
     }elseif($search_by == 'company'){
-      $where .= "&& company LIKE '%$search%'";
+      $where .= "&& company LIKE '%:c_search%'";
+      $parameters['c_search' ] = $search;
     }else{
-      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+      $where .= "&& (first_name LIKE '%:f_search%' || last_name LIKE '%:l_search%')";
+      $parameters['f_search' ] = $search;
+      $parameters['l_search'] = $search;
     }
   }
   if(isset($category)){
-    $where .= "&& cms_cat.cat_id = $category";
+    $where .= "&& cms_cat.cat_id = :category";
+    $parameters['category'] = $category;
   }
+  $data;
   try{
     $db = connect();
-    $query;
-    if(isset($show_deleted)){
-      $query = $db->prepare($sql.$where.$order_by);
-    }else{
-      $query = $db->prepare($sql.$order_by);
-    }
+    $query = $db->prepare($sql.$where.$order_by);
+    $result_set = $query->execute($parameters);
 
-    $result_set = $query->execute([]);
-    $data = group_data($query);
+
+    for($i = 0; $row = $query->fetch(); $i++){
+      echo "CMS ID: {$row['cms_id']}\n";
+      $data[$i] = get_contact_categories($row['cms_id']);
+      //current(get_contact_with_categories_by_id($row['cms_id']));
+      // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
+      // print_r(get_contact_with_categories_by_id($row['cms_id']));
+      // echo "</pre>";
+      // echo "</br>End Contact #{$row['cms_id']}</br>";
+    }
     $db = null;
-    return $data;
-  }catch(PDOException $e) {
-    log_or_echo(false, $e.getMessage());
+  }catch(PDOException $e){
+    log_or_echo($e);
   }
-}
+  return $data;
+  }
 /**
   * This function gets one contact from the database,
-  * and then passes it to the data grouper,
-  * before returning the results
-  * in an associtive array.
+  * and then returns it in array format.
+  *
+  * Replaces 'get_contact_with_categories_by_id()'.
   *
   * @param $id the id of the contact
   * @return $data associtiive array of the contacts with subarry for categories
   */
-function get_contact_with_categories_by_id($id){
+function get_contact_categories($id){
+  //echo "$id</br>";
   //define the query
   $sql = 'SELECT
                 cms_contact.cms_id,
@@ -140,95 +159,52 @@ function get_contact_with_categories_by_id($id){
                 cms_contact.city,
                 cms_contact.state,
                 cms_contact.zip,
-                cms_contact.company,
-                cms_cat.cat_desc,
-                cms_contact_categories.cms_cat_id
+                cms_contact.company
               FROM cms_contact
-              INNER JOIN cms_contact_categories
-              ON cms_contact.cms_id = cms_contact_categories.cms_id
-              INNER JOIN cms_cat
-              ON cms_cat.cat_id = cms_contact_categories.cat_id
               WHERE cms_contact.cms_id = :cms_id
               ORDER BY cms_contact.last_name, cms_contact.first_name';
+  $cat_sql = 'SELECT
+                    cms_contact_categories.cms_id,
+                    cms_contact_categories.cms_cat_id,
+                    cms_cat.cat_id,
+                    cms_cat.cat_desc
+                  FROM cms_contact_categories
+                  INNER JOIN cms_cat
+                  ON cms_contact_categories.cat_id = cms_cat.cat_id
+                  WHERE cms_contact_categories.cms_id = :id';
   try{
     $db = connect();
     $query = $db->prepare($sql);
     $result_set = $query->execute(["cms_id" => $id]);
     //return "<pre>".print_r($raw_data, true)."</pre>";
-
-    $data = group_data($query);
+    $contact = $query->fetch();
+    $data = ['id' => $contact['cms_id'],
+            'first_name' => $contact['first_name'],
+            'last_name' => $contact['last_name'],
+            'phone_number' => $contact['phone_number'],
+            'email_address' => $contact['email_address'],
+            'street_address' => $contact['street_address'],
+            'city' => $contact['city'],
+            'state' => $contact['state'],
+            'zip' =>$contact['zip'],
+            'company' =>$contact['company']];
+    $cat_array = array();
+    $query = $db->prepare($cat_sql);
+    $query->execute(['id'=>$id]);
+    for($i = 0; $row = $query->fetch();$i++){
+      $cms_cat_id = $row['cms_cat_id'];
+      $cat_array[$cms_cat_id] = $row['cat_desc'];
+    }
+    $data['cat_array'] = $cat_array;
+    // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
+    // print_r($data);
+    // echo "</pre>";
+    // //echo "</br>End Contact #{$row['cms_id']}</br>";
     $db = null;
     return $data;
   }catch(PDOException $e) {
     log_or_echo(false, $e.getMessage());
   }
-}
-/**
-  * This function groups data from the contacts table into an array.
-  * Each record has it's associated categories in a sub-array.
-  *
-  * @param PDOStatement $query  A PDO object that contains a query.
-  * @return array $data An array of contacts with categories grouped.
-  */
-
-
-/**
-  * This function groups data from the contacts table into an array.
-  * Each record has it's associated categories in a sub-array.
-  *
-  * @param PDOStatement $query A PDO object that contains a query.
-  * @return array $data An array of contacts with categories grouped.
-  */
-function group_data(PDOStatement $query){
-  $raw_data;
-  $i = 0;
-  while($row = $query->fetch()){
-    $raw_data[$i++] = $row;
-  }
-  $lastId;
-  $first_iteration = true;
-  $data;
-  $categories;
-  for($i = 0; $i < count($raw_data); $i++){
-    //echo "For: $i<br/>";
-    if($first_iteration){
-      $last_id = $row['cms_id'];
-      $first_iteration = false;
-    }
-    $row = $raw_data[$i];
-    $current_id = $row['cms_id'];
-    //start preparing new row
-    if($last_id == $row['cms_id']){
-      //add the data to the categories
-      $cms_cat_id = $row['cms_cat_id'];
-      $categories["$cms_cat_id"] = $row['cat_desc'];
-      //add the latest catgory array to the main array, overwriting the data.
-      $data[$last_id]['cat_array'] = $categories;
-      //$data_row = $data[$last_id];
-      //$data_row["cat_array"] = $categories;
-    }else{
-      //Change the tracked id because we are beginning a new record.
-      $last_id = $row['cms_id'];
-      $categories = array();
-      $cms_cat_id = $row['cms_cat_id'];
-      $categories["$cms_cat_id"] = $row['cat_desc'];
-      //add the data because we are beginnning a new record.
-      $data["$last_id"] = array(
-        'id' => $row['cms_id'],
-        'first_name' => $row['first_name'],
-        'last_name' => $row['last_name'],
-        'phone_number' => $row['phone_number'],
-        'email_address'=> $row['email_address'],
-        'street_address'=> $row['street_address'],
-        'city' => $row['city'],
-        'state' => $row['state'],
-        'zip' => $row['zip'],
-        'company' => $row['company'],
-        'cat_array'=> $categories
-      );
-    }
-  }
-  return $data;
 }
 /**
   *This function outputs a table from the results of a contacts query with grouped data.
@@ -336,8 +312,7 @@ function table_display_full(array $data){
   * @param $action the action to perform (valid options are `update`, `delete`, and `add`)
   */
 function crud_contact(array $data, $action){
-//kind of want a way to collapse or hide the query text. Takes up space and hard to read.
-//queries for contacts
+
   $insert = "INSERT INTO cms_contact(
             first_name,
             last_name,
@@ -371,7 +346,7 @@ function crud_contact(array $data, $action){
   $delete = "DELETE FROM cms_contact";
   $soft_delete = "UPDATE cms_contact SET soft_delete = 1";
   $where = " WHERE cms_id = :cms_id";
-//queries for contact categories
+
 $insert_con_cat = "INSERT INTO cms_contact_categories(cms_id, cat_id) VALUES(:cms_id, :cat_id);";
 $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
 /**
@@ -442,26 +417,6 @@ $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
   }
   //return $result;
 }
-/**
-  *This function simply lists all the categories from the database.
-  *
-  * @return array $data an array of categories.
-  */
-function list_all_categories(){
-  $sql = "SELECT * FROM  sctcc_cms.cms_cat;";
-  try{
-    $db = connect();
-    $query = $db->prepare($sql);
-    $result_set = $query->execute([]);
-    $data = array();
-    while($row = $query->fetch()){
-        $data[$row['cat_id']] = $row['cat_desc'];
-    }
-    return $data;
-  }catch(PDOException $e){
-    log_or_echo(false, $e);
-  }
-}
 function crud_cat($action = null, $id = null, $desc = null){
   $insert = "INSERT INTO cms_cat(cat_desc) VALUES (:cat_desc)";
   $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
@@ -502,6 +457,184 @@ function crud_cat($action = null, $id = null, $desc = null){
     log_or_echo($e);
   }
 }
+
+/**
+  * This function gets the data on contacts from the database,
+  * and then passes it to the data grouper,
+  * before returning the results
+  * in an associtive array.
+  * @param $show_deleted Determines if you want to display a result set of
+  * soft_deleted(1) records or normal(0) records. Defaults to 0.
+  * @return $data associtiive array of the contacts with subarry for categories
+  * @deprecated This function is no longer used in the app. Use `get_contacts_search` instead.
+  */
+function get_contacts_with_categories($show_deleted = 0, $search = null, $search_by= null, $category = null){
+  //define the query
+  $sql = 'SELECT
+                cms_contact.cms_id,
+                cms_contact.first_name,
+                cms_contact.last_name,
+                cms_contact.phone_number,
+                cms_contact.email_address,
+                cms_contact.street_address,
+                cms_contact.city,
+                cms_contact.state,
+                cms_contact.zip,
+                cms_contact.company,
+                cms_cat.cat_desc,
+                cms_contact_categories.cms_cat_id
+              FROM cms_contact
+              INNER JOIN cms_contact_categories
+              ON cms_contact.cms_id = cms_contact_categories.cms_id
+              INNER JOIN cms_cat
+              ON cms_cat.cat_id = cms_contact_categories.cat_id';
+  $where = " WHERE soft_delete = $show_deleted";
+  $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name";
+  if(isset($search)){
+    if($search_by == 'name'){
+      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+    }elseif($search_by == 'company'){
+      $where .= "&& company LIKE '%$search%'";
+    }else{
+      $where .= "&& (first_name LIKE '%$search%' || last_name LIKE '%$search%')";
+    }
+  }
+  if(isset($category)){
+    $where .= "&& cms_cat.cat_id = $category";
+  }
+  try{
+    $db = connect();
+    $query;
+    if(isset($show_deleted)){
+      $query = $db->prepare($sql.$where.$order_by);
+    }else{
+      $query = $db->prepare($sql.$order_by);
+    }
+
+    $result_set = $query->execute([]);
+    $data = group_data($query);
+    $db = null;
+    return $data;
+  }catch(PDOException $e) {
+    log_or_echo(false, $e.getMessage());
+  }
+}
+/**
+  * This function gets one contact from the database,
+  * and then passes it to the data grouper,
+  * before returning the results
+  * in an associtive array.
+  *
+  * This function has some quirky return results
+  * due to the encapsulating array
+  * used by `group_data()`.
+  *
+  * It's usually useful to call `current()` from PHP's
+  * native library, as strips the useful data
+  * from the array without duplicates.
+  *
+  * `get_contact_categories` fufills the same functionality without this quirk.
+  * `get_contact_with_categories_by_id` is maintained for legacy code
+  * that still calls this function and has not been refactored at this point in time.
+  *
+  * @param $id the id of the contact
+  * @return $data associtiive array of the contacts with subarry for categories
+  */
+function get_contact_with_categories_by_id($id){
+  //define the query
+  $sql = 'SELECT
+                cms_contact.cms_id,
+                cms_contact.first_name,
+                cms_contact.last_name,
+                cms_contact.phone_number,
+                cms_contact.email_address,
+                cms_contact.street_address,
+                cms_contact.city,
+                cms_contact.state,
+                cms_contact.zip,
+                cms_contact.company,
+                cms_cat.cat_desc,
+                cms_contact_categories.cms_cat_id
+              FROM cms_contact
+              INNER JOIN cms_contact_categories
+              ON cms_contact.cms_id = cms_contact_categories.cms_id
+              INNER JOIN cms_cat
+              ON cms_cat.cat_id = cms_contact_categories.cat_id
+              WHERE cms_contact.cms_id = :cms_id
+              ORDER BY cms_contact.last_name, cms_contact.first_name';
+  try{
+    $db = connect();
+    $query = $db->prepare($sql);
+    $result_set = $query->execute(["cms_id" => $id]);
+    //return "<pre>".print_r($raw_data, true)."</pre>";
+
+    $data = group_data($query);
+    $db = null;
+    return $data;
+  }catch(PDOException $e) {
+    log_or_echo(false, $e.getMessage());
+  }
+}
+
+/**
+  * This function groups data from the contacts table into an array.
+  * Each record has it's associated categories in a sub-array.
+  *
+  * @param PDOStatement $query A PDO object that contains a query.
+  * @return array $data An array of contacts with categories grouped.
+  */
+function group_data(PDOStatement $query){
+  $raw_data;
+  $i = 0;
+  while($row = $query->fetch()){
+    $raw_data[$i++] = $row;
+  }
+  $lastId;
+  $first_iteration = true;
+  $data;
+  $categories;
+  for($i = 0; $i < count($raw_data); $i++){
+    //echo "For: $i<br/>";
+    if($first_iteration){
+      $last_id = $row['cms_id'];
+      $first_iteration = false;
+    }
+    $row = $raw_data[$i];
+    $current_id = $row['cms_id'];
+    //start preparing new row
+    if($last_id == $row['cms_id']){
+      //add the data to the categories
+      $cms_cat_id = $row['cms_cat_id'];
+      $categories["$cms_cat_id"] = $row['cat_desc'];
+      //add the latest catgory array to the main array, overwriting the data.
+      $data[$last_id]['cat_array'] = $categories;
+      //$data_row = $data[$last_id];
+      //$data_row["cat_array"] = $categories;
+    }else{
+      //Change the tracked id because we are beginning a new record.
+      $last_id = $row['cms_id'];
+      $categories = array();
+      $cms_cat_id = $row['cms_cat_id'];
+      $categories["$cms_cat_id"] = $row['cat_desc'];
+      //add the data because we are beginnning a new record.
+      $data["$last_id"] = array(
+        'id' => $row['cms_id'],
+        'first_name' => $row['first_name'],
+        'last_name' => $row['last_name'],
+        'phone_number' => $row['phone_number'],
+        'email_address'=> $row['email_address'],
+        'street_address'=> $row['street_address'],
+        'city' => $row['city'],
+        'state' => $row['state'],
+        'zip' => $row['zip'],
+        'company' => $row['company'],
+        'cat_array'=> $categories
+      );
+    }
+  }
+  return $data;
+}
+
 function redirect($url){
   header("Location:http://localhost/".$url);
 }

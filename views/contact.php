@@ -50,7 +50,7 @@ if(isset($_POST['action'])){
     */
   if($action === 'delete' || $action === 'view'){
     if(isset($_POST['id'])){
-      $data = get_contact_with_categories_by_id($_POST['id']);
+      $data = get_contact_with_categories_by_id($_POST['id']); //Try changing at some point down the line.
       if($action === 'delete'){
         action_buttons($_POST['id'], ['view', 'update']);
       }elseif($action === 'view'){
@@ -108,7 +108,11 @@ function add_or_update(array $data = null, $action = 'add'){
       $data[$field] = null;
     }
   }else {
-    //This function seems to have been implement to remove a quirk in the get_contact_with_categories_by_id() //function that returns an encapsulating array. 
+    /**
+      * This function to `current()` seems to have been implement to remove a quirk in
+      * the'get_contact_with_categories_by_id()' function that returns
+      * an encapsulating array.
+      */
     $data = current($data);
   }
   echo "<form action='new_contact.php' method='post' name='add_or_update' class = 'data'>";
