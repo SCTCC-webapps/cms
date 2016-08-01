@@ -30,17 +30,20 @@ function write_header(string $custom_code = null)
     echo "</div>";
 }
 function nav_bar_and_search(){
-  echo "<form action='contacts.php' method='post'>";
-    echo "<label for='search'>Search:</label>";
-    echo "<input type='text' name='search'/>";
+  echo <<<EOD
+    <form action='contacts.php' method='get'>
+      <label for='search'>Search:</label>
+      <input type='text' name='search'/>
 
-    echo "<label for='search-by'> &nbsp; Search By:</label>";
-    echo "<select name='search-by'>";
-      echo "<option value='name'>Name</option>";
-      echo "<option value='company'>Company</option>";
-    echo "</select>";
-    echo "<label for='catetgory'>&nbsp; Category:</label>";
+      <label for='search-by'> &nbsp; Search By:</label>
+      <select name='search-by'>
+        <option value='name'>Name</option>
+        <option value='company'>Company</option>
+      </select>
+      <label for='catetgory'>&nbsp; Category:</label>
+EOD;
     echo "<select name='category'>";
+    echo "<option value = 'no-cat'>Select a category...</option>";
     $cats = list_all_categories();
     foreach($cats as $id => $cat){
       echo "<option value='{$id}'>$cat</option>";

@@ -83,12 +83,13 @@ require 'db-connect.php';
   */
 
  function get_contacts_search($limit = 50, $offset = 0, $search = null, $search_by = null, $category = null, $show_deleted = 0){
-
    //Reference: http://stackoverflow.com/questions/10015364/pagination-sql-query-syntax
    //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
    $sql = 'SELECT
                 cms_contact.cms_id
-                FROM cms_contact';
+                FROM cms_contact
+                INNER JOIN cms_contact_categories
+                ON cms_contact.cms_id = cms_contact_categories.cms_id';
   $where = " WHERE cms_contact.soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name LIMIT $limit OFFSET $offset";
   //$limit_offset = ' LIMIT :limit OFFSET :offset';
@@ -99,31 +100,33 @@ require 'db-connect.php';
 
   if(isset($search)){
     if($search_by == 'name'){
-      $where .= "&& (first_name LIKE '%:f_search%' || last_name LIKE '%:l_search%')";
-      $parameters['f_search' ] = $search;
-      $parameters['l_search'] = $search;
+      $where .= " && (first_name LIKE :f_search || last_name LIKE :l_search)";
+      $parameters['f_search' ] = '%'.$search.'%';
+      $parameters['l_search'] = '%'.$search.'%';
     }elseif($search_by == 'company'){
-      $where .= "&& company LIKE '%:c_search%'";
-      $parameters['c_search' ] = $search;
+      $where .= " && company LIKE :c_search";
+      $parameters['c_search' ] =  '%'.$search.'%';
     }else{
-      $where .= "&& (first_name LIKE '%:f_search%' || last_name LIKE '%:l_search%')";
-      $parameters['f_search' ] = $search;
-      $parameters['l_search'] = $search;
+      $where .= " && (first_name LIKE :f_search || last_name LIKE :l_search)";
+      $parameters['f_search' ] = '%'.$search.'%';
+      $parameters['l_search'] =  '%'.$search.'%';
     }
   }
-  if(isset($category)){
-    $where .= "&& cms_cat.cat_id = :category";
+  if(isset($category) && $category != 'no-cat'){
+    $where .= " && cms_contact_categories.cat_id = :category";
     $parameters['category'] = $category;
   }
+  echo "<div class='greenmessage'>". $sql.$where.$order_by ."</div>";
   $data;
   try{
     $db = connect();
     $query = $db->prepare($sql.$where.$order_by);
+    print_r($parameters);
+    //echo "<div class='greenmessage'><pre>".print_r($parameters)."</pre></div>";
     $result_set = $query->execute($parameters);
 
-
     for($i = 0; $row = $query->fetch(); $i++){
-      echo "CMS ID: {$row['cms_id']}\n";
+    //echo "CMS ID: {$row['cms_id']}\n";
       $data[$i] = get_contact_categories($row['cms_id']);
       //current(get_contact_with_categories_by_id($row['cms_id']));
       // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
@@ -206,6 +209,25 @@ function get_contact_categories($id){
     log_or_echo(false, $e.getMessage());
   }
 }
+/**
+  * This function returns an array listing all the categories in the database.
+  */
+  function list_all_categories(){
+    $sql = "SELECT * FROM  sctcc_cms.cms_cat;";
+    try{
+      $db = connect();
+      $query = $db->prepare($sql);
+      $result_set = $query->execute([]);
+      $data = array();
+      while($row = $query->fetch()){
+          $data[$row['cat_id']] = $row['cat_desc'];
+      }
+      return $data;
+    }catch(PDOException $e){
+      log_or_echo(false, $e);
+    }
+  };
+
 /**
   *This function outputs a table from the results of a contacts query with grouped data.
   * Some fields have been hidden so the table is not too wide.
