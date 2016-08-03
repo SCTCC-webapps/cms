@@ -87,9 +87,9 @@ require 'db-connect.php';
    //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
    $sql = 'SELECT
                 cms_contact.cms_id
-                FROM cms_contact
-                INNER JOIN cms_contact_categories
-                ON cms_contact.cms_id = cms_contact_categories.cms_id';
+                FROM cms_contact';
+//                INNER JOIN cms_contact_categories
+//                ON cms_contact.cms_id = cms_contact_categories.cms_id';
   $where = " WHERE cms_contact.soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name LIMIT $limit OFFSET $offset";
   //$limit_offset = ' LIMIT :limit OFFSET :offset';
@@ -112,9 +112,11 @@ require 'db-connect.php';
       $parameters['l_search'] =  '%'.$search.'%';
     }
   }
+  $cat_filter_sql = 'SELECT cms_id, cat_id FROM sctcc_cms.cms_contact_categories WHERE cms_id = :cms_id && cat_id = :cat_id ';
   if(isset($category) && $category != 'no-cat'){
-    $where .= " && cms_contact_categories.cat_id = :category";
-    $parameters['category'] = $category;
+
+  //   $where .= " && cms_contact_categories.cat_id = :category";
+  //   $parameters['category'] = $category;
   }
   echo "<div class='greenmessage'>". $sql.$where.$order_by ."</div>";
   $data;
@@ -124,9 +126,8 @@ require 'db-connect.php';
     print_r($parameters);
     //echo "<div class='greenmessage'><pre>".print_r($parameters)."</pre></div>";
     $result_set = $query->execute($parameters);
-
     for($i = 0; $row = $query->fetch(); $i++){
-    //echo "CMS ID: {$row['cms_id']}\n";
+      //echo "CMS ID: {$row['cms_id']}\n";
       $data[$i] = get_contact_categories($row['cms_id']);
       //current(get_contact_with_categories_by_id($row['cms_id']));
       // echo "<pre style='display:block; background-color:#ccffff; border:5px solid blue;'>";
@@ -139,6 +140,15 @@ require 'db-connect.php';
     log_or_echo($e);
   }
   return $data;
+  }
+  function test_cat($cat_id, $cms_id){
+    $cc = connect();
+    $cat_check = $cc->prepare($cat_filter_sql);
+      if(isset($category) && $category != 'no-cat'){
+        $cat_check->execute(['cms_id' => $cms_id, 'cat_id' => $category]);
+      }
+      return $cat_check->rowCount();
+
   }
 /**
   * This function gets one contact from the database,
