@@ -115,11 +115,12 @@ require 'db-connect.php';
   $cat_filter_sql = 'SELECT cms_id, cat_id FROM sctcc_cms.cms_contact_categories WHERE cms_id = :cms_id && cat_id = :cat_id ';
   if(isset($category) && $category != 'no-cat'){
 
-  //   $where .= " && cms_contact_categories.cat_id = :category";
-  //   $parameters['category'] = $category;
+    $where .= " && cms_contact_categories.cat_id = :category";
+    $parameters['category'] = $category;
   }
   echo "<div class='greenmessage'>". $sql.$where.$order_by ."</div>";
   $data;
+  $duplicates;
   try{
     $db = connect();
     $query = $db->prepare($sql.$where.$order_by);
@@ -139,6 +140,7 @@ require 'db-connect.php';
   }catch(PDOException $e){
     log_or_echo($e);
   }
+  $data = array_unique($data, SORT_REGULAR);
   return $data;
   }
   function test_cat($cat_id, $cms_id){
