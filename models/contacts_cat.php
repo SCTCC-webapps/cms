@@ -70,8 +70,8 @@ require 'db-connect.php';
   * If search parameters are not set,
   * then the function will return
   * all records not soft-deleted.
-  * @param Point to start records for pagination.
-  * @param Point to end records for pagination.
+  * @param $limit Number of records to show for pagination.
+  * @param $offset Point to start records for pagination.
   * @param $search String to look for in the database.
   * @param $search_by Tells the function to look by contact or company name.
   *        Valid values are 'name' or 'company'. Function behavior defaults to
@@ -87,9 +87,9 @@ require 'db-connect.php';
    //Use MySQL Keywords LIMIT & OFFSET to pageinate a query.
    $sql = 'SELECT
                 cms_contact.cms_id
-                FROM cms_contact';
-//                INNER JOIN cms_contact_categories
-//                ON cms_contact.cms_id = cms_contact_categories.cms_id';
+                FROM cms_contact
+                INNER JOIN cms_contact_categories
+                ON cms_contact.cms_id = cms_contact_categories.cms_id';
   $where = " WHERE cms_contact.soft_delete = $show_deleted";
   $order_by = " ORDER BY cms_contact.last_name, cms_contact.first_name LIMIT $limit OFFSET $offset";
   //$limit_offset = ' LIMIT :limit OFFSET :offset';
@@ -118,13 +118,13 @@ require 'db-connect.php';
     $where .= " && cms_contact_categories.cat_id = :category";
     $parameters['category'] = $category;
   }
-  echo "<div class='greenmessage'>". $sql.$where.$order_by ."</div>";
+  //echo "<div class='greenmessage'>". $sql.$where.$order_by ."</div>";
   $data;
   $duplicates;
   try{
     $db = connect();
     $query = $db->prepare($sql.$where.$order_by);
-    print_r($parameters);
+    //print_r($parameters);
     //echo "<div class='greenmessage'><pre>".print_r($parameters)."</pre></div>";
     $result_set = $query->execute($parameters);
     for($i = 0; $row = $query->fetch(); $i++){
@@ -140,18 +140,22 @@ require 'db-connect.php';
   }catch(PDOException $e){
     log_or_echo($e);
   }
-  $data = array_unique($data, SORT_REGULAR);
+  //Not sure WHY this works, but it does remove duplicates.
+  //Ref:http://stackoverflow.com/questions/307674/how-to-remove-duplicate-values-from-a-multi-dimensional-array-in-php
+  if(isset($data)){
+    $data = array_unique($data, SORT_REGULAR);
+  }
   return $data;
   }
-  function test_cat($cat_id, $cms_id){
-    $cc = connect();
-    $cat_check = $cc->prepare($cat_filter_sql);
-      if(isset($category) && $category != 'no-cat'){
-        $cat_check->execute(['cms_id' => $cms_id, 'cat_id' => $category]);
-      }
-      return $cat_check->rowCount();
-
-  }
+  // function test_cat($cat_id, $cms_id){
+  //   $cc = connect();
+  //   $cat_check = $cc->prepare($cat_filter_sql);
+  //     if(isset($category) && $category != 'no-cat'){
+  //       $cat_check->execute(['cms_id' => $cms_id, 'cat_id' => $category]);
+  //     }
+  //     return $cat_check->rowCount();
+  //
+  // }
 /**
   * This function gets one contact from the database,
   * and then returns it in array format.
@@ -239,56 +243,91 @@ function get_contact_categories($id){
       log_or_echo(false, $e);
     }
   };
-
+/**
+  *This returns a count of contacts in the database. Used in pagination.
+  */
+  function contact_count(){
+    $count;
+    try{
+      $db = connect();
+      $query = $db->prepare('SELECT count(cms_contact.cms_id) AS count FROM cms_contact;');
+      $query->execute();
+      $count = $query->fetch();
+    }catch(PDOException $e){
+      log_or_echo(false, $e);
+    }
+  }
 /**
   *This function outputs a table from the results of a contacts query with grouped data.
   * Some fields have been hidden so the table is not too wide.
   * @param array $data A grouped array of data from the query.
   */
-function table_display(array $data){
+function table_display($data, $page_number = 1, $page_interval = 50, $show_deleted_mode = false){
   // echo "<pre>";
   // print_r(get_contacts_with_categories_no_search());
   // echo "</pre>";
-  echo "<table>";
-  echo "<tr>".
-          "<th>Name</th>".
-          "<th>Email</th>".
-          "<th>Company</th>".
-          "<th>Categories</th>".
-          "</tr>";
-  foreach($data as $row){
-    echo "<tr id='{$row['id']}'>";
-    echo "<td>{$row['first_name']} {$row['last_name']}</td>";
-    echo "<td><a href='mailto:{$row['email_address']}'/>{$row['email_address']}</a></td>";
-    echo "<td>{$row['company']}</td>";
-    echo "<td><ul>";
-    foreach($row['cat_array'] as $cat){
-      if(!empty($cat)){
-        echo "<li>$cat</li>";
+  if(isset($data)){
+    echo "<table>";
+    echo "<tr>".
+            "<th>Name</th>".
+            "<th>Email</th>".
+            "<th>Company</th>".
+            "<th>Categories</th>".
+            "</tr>";
+    foreach($data as $row){
+      echo "<tr id='{$row['id']}'>";
+      echo "<td>{$row['first_name']} {$row['last_name']}</td>";
+      echo "<td><a href='mailto:{$row['email_address']}'/>{$row['email_address']}</a></td>";
+      echo "<td>{$row['company']}</td>";
+      echo "<td><ul>";
+      foreach($row['cat_array'] as $cat){
+        if(!empty($cat)){
+          echo "<li>$cat</li>";
+        }
       }
-    }
-    echo "</ul></td>";
-    echo "<td>";
-    $actions = array('view'); //, 'update', 'delete');
-      foreach($actions as $action){
-        $action_button = ucfirst($action);// `ucfirst()` capitalizes the first letter in a string.
-        echo "<form action='contact.php' method='POST' name='{$row['id']}_$action'>";
-        echo "<input type='hidden' name='action' value='$action'/>";
-        echo "<input type='hidden' name='id' value='{$row['id']}'/>";
-        echo "<input type='submit' name='submit' value='$action_button' class='sctcc-button'/>";
-        echo "</form>";
+      echo "</ul></td>";
+      echo "<td>";
+      $actions;
+      if($show_deleted_mode){
+        $actions =  array('restore', 'perma-delete');
       }
-    echo "</td>";
-    echo "</tr>";
-  }
-  echo "</table>";
+      else{
+        $actions = array('view'); //, 'update', 'delete');
 
+      }
+        foreach($actions as $action){
+          $action_button = ucfirst($action);// `ucfirst()` capitalizes the first letter in a string.
+          echo "<form action='contact.php' method='POST' name='{$row['id']}_$action'>";
+          echo "<input type='hidden' name='action' value='$action'/>";
+          echo "<input type='hidden' name='id' value='{$row['id']}'/>";
+          echo "<input type='submit' name='submit' value='$action_button' class='sctcc-button'/>";
+          echo "</form>";
+        }
+      echo "</td>";
+      echo "</tr>";
+    }
+    echo "</table>";
+  }
+  else{
+    echo "<div class = 'redmessage'>Your search did not return any results,
+     or there was a problem. We're sorry!</div>";
+  }
+
+}
+/**
+  * This function produces the HTML to display a page selector.
+  *
+  */
+function page_selector_html($page = 1, $page_interval, $url){
+  $count = contact_count();
 }
 /**
   *This function outputs a table from the results of a contacts query with grouped data.
   *It doesn't hide any feilds.
   *
   * @param array $data A grouped array of data from the query.
+  * @deprecated No longer used or maintained because the table is too wide for most screens.
+  * Still works, but needs some updates if you want to support pagination.
   */
 function table_display_full(array $data){
   // echo "<pre>";
@@ -346,7 +385,6 @@ function table_display_full(array $data){
   * @param $action the action to perform (valid options are `update`, `delete`, and `add`)
   */
 function crud_contact(array $data, $action){
-
   $insert = "INSERT INTO cms_contact(
             first_name,
             last_name,
@@ -380,23 +418,56 @@ function crud_contact(array $data, $action){
   $delete = "DELETE FROM cms_contact";
   $soft_delete = "UPDATE cms_contact SET soft_delete = 1";
   $where = " WHERE cms_id = :cms_id";
+  $insert_con_cat = "INSERT INTO cms_contact_categories(cms_id, cat_id) VALUES(:cms_id, :cat_id);";
+  $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
+  /**
+    * $db is a database connection.
+    * $query is a PDOStatement.
+    * $x_result is any result from the query.
+    */
+    $db = connect();
+    $query;
+    $contact_result;
 
-$insert_con_cat = "INSERT INTO cms_contact_categories(cms_id, cat_id) VALUES(:cms_id, :cat_id);";
-$delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
-/**
-  * $db is a database connection.
-  * $query is a PDOStatement.
-  * $x_result is any result from the query.
-  */
-  $db = connect();
-  $query;
-  $contact_result;
 
+    if(isset($action) && $action === "update"){
+      // update the contact data
+      $query = $db->prepare($update.$where);
+      $contact_result = $query->execute(
+        [ 'first_name' => $data['first_name'],
+          'last_name' => $data['last_name'],
+          'phone_number' => $data['phone_number'],
+          'email_address' => $data['email_address'],
+          'street_address' => $data['street_address'],
+          'city' => $data['city'],
+          'state' => $data['state'],
+          'zip' => $data['zip'],
+          'company' => $data['company'],
+          'cms_id' => $data['cms_id']
+        ]);
+      // delete previous categories
+      $query = $db->prepare($delete_con_cat);
+      $query->execute(['cms_id' => $data['cms_id']]);
+      // assign cms_id to varible.
+      $cms_id = $data['cms_id'];
+      // insert new categories.
+      $query = $db->prepare($insert_con_cat);
+      foreach($data['cat_array'] as $cat){
+        $cat_id = $cat;
+        $query->execute(['cms_id' => $cms_id, 'cat_id'=> $cat_id]);
+      }
+    }elseif (isset($action) && $action === "delete") {
+      //  delete category relations
+      //$query = $db->prepare($delete_con_cat);
+      //$query->execute(['cms_id' => $data['cms_id']]);
+      //  delete contact
+      $query = $db->prepare($soft_delete.$where);
+      $contact_result = $query->execute(['cms_id' => $data['cms_id']]);
 
-  if(isset($action) && $action === "update"){
-    // update the contact data
-    $query = $db->prepare($update.$where);
-    $contact_result = $query->execute(
+    }elseif(isset($action) && $action === "add"){
+      // insert the new record
+      $query = $db->prepare($insert);
+      $contact_result = $query->execute(
       [ 'first_name' => $data['first_name'],
         'last_name' => $data['last_name'],
         'phone_number' => $data['phone_number'],
@@ -405,52 +476,23 @@ $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
         'city' => $data['city'],
         'state' => $data['state'],
         'zip' => $data['zip'],
-        'company' => $data['company'],
-        'cms_id' => $data['cms_id']
+        'company' => $data['company']
       ]);
-    // delete previous categories
-    $query = $db->prepare($delete_con_cat);
-    $query->execute(['cms_id' => $data['cms_id']]);
-    // assign cms_id to varible.
-    $cms_id = $data['cms_id'];
-    // insert new categories.
-    $query = $db->prepare($insert_con_cat);
-    foreach($data['cat_array'] as $cat){
-      $cat_id = $cat;
-      $query->execute(['cms_id' => $cms_id, 'cat_id'=> $cat_id]);
+      // get cms_id from insert
+      $cms_id = $db->lastInsertID();
+      $query = $db->prepare($insert_con_cat);
+      foreach($data['cat_array'] as $cat){
+        $cat_id = $cat;
+        $query->execute(['cms_id' => $cms_id, 'cat_id'=> $cat_id]);
+      }
     }
-  }elseif (isset($action) && $action === "delete") {
-    //  delete category relations
-    //$query = $db->prepare($delete_con_cat);
-    //$query->execute(['cms_id' => $data['cms_id']]);
-    //  delete contact
-    $query = $db->prepare($soft_delete.$where);
-    $contact_result = $query->execute(['cms_id' => $data['cms_id']]);
-
-  }elseif(isset($action) && $action === "add"){
-    // insert the new record
-    $query = $db->prepare($insert);
-    $contact_result = $query->execute(
-    [ 'first_name' => $data['first_name'],
-      'last_name' => $data['last_name'],
-      'phone_number' => $data['phone_number'],
-      'email_address' => $data['email_address'],
-      'street_address' => $data['street_address'],
-      'city' => $data['city'],
-      'state' => $data['state'],
-      'zip' => $data['zip'],
-      'company' => $data['company']
-    ]);
-    // get cms_id from insert
-    $cms_id = $db->lastInsertID();
-    $query = $db->prepare($insert_con_cat);
-    foreach($data['cat_array'] as $cat){
-      $cat_id = $cat;
-      $query->execute(['cms_id' => $cms_id, 'cat_id'=> $cat_id]);
-    }
-  }
-  //return $result;
+    //return $result;
 }
+/**
+  * This function handles CRUD operations for `categories.php.`
+  * @param $action Action to take.
+  * @param $id Id to work with.
+  * @param $desc Category name.
 function crud_cat($action = null, $id = null, $desc = null){
   $insert = "INSERT INTO cms_cat(cat_desc) VALUES (:cat_desc)";
   $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
