@@ -256,13 +256,18 @@ function get_contact_categories($id){
     }catch(PDOException $e){
       log_or_echo(false, $e);
     }
+    return $count['count'];
   }
 /**
   *This function outputs a table from the results of a contacts query with grouped data.
   * Some fields have been hidden so the table is not too wide.
+  *
   * @param array $data A grouped array of data from the query.
+  * @param $page The current page number.
+  * @param $page_interval The number of items per page.
+  * @param $url The URL query string of this page load.
   */
-function table_display($data, $page_number = 1, $page_interval = 50, $show_deleted_mode = false){
+function table_display($data, $page_number = 1, $page_interval = 50, $show_deleted_mode = false, $url = null){
   // echo "<pre>";
   // print_r(get_contacts_with_categories_no_search());
   // echo "</pre>";
@@ -307,6 +312,7 @@ function table_display($data, $page_number = 1, $page_interval = 50, $show_delet
       echo "</tr>";
     }
     echo "</table>";
+    page_selector_html($page_number, $page_interval, $url);
   }
   else{
     echo "<div class = 'redmessage'>Your search did not return any results,
@@ -317,9 +323,52 @@ function table_display($data, $page_number = 1, $page_interval = 50, $show_delet
 /**
   * This function produces the HTML to display a page selector.
   *
+  * @param $page The current page number.
+  * @param $page_interval The number of items per page.
+  * @param $url The URL query string of this page load.
   */
 function page_selector_html($page = 1, $page_interval, $url){
   $count = contact_count();
+  var_dump($count);
+  var_dump($page_interval);
+  $number_of_pages = ceil( $count / $page_interval);
+
+  /**
+    * `# ` serves as the delimiter required by PHP's pcre
+    * (http://www.php.net/manual/en/regexp.reference.delimiters.php).
+    *
+    * `()` creates a capture group.
+    * `/d+`match a digit. `+` serves as a quanitifer:
+    * between one and unlimited times,
+    * as many times as possible, giving back as needed [greedy].
+    */
+  $pattern = '#&page=(\d+)#';
+  $replacement = '';
+  echo <<<EOD
+        <pre>
+        Page = $page
+        Page Interval = $page_interval
+        Count = $count
+        Number of Pages = $number_of_pages;
+        Page URL Query String = $url
+
+EOD;
+  $url = preg_replace($pattern, $replacement, $url);
+  echo "Page URL Regex: $url; </pre>";
+  echo "<div class = ''>";
+
+  for($i = 1; $i <= $number_of_pages; $i++){
+
+    if($i === $page){
+      echo " <a href='contacts.php?$url&page=$i'><b>$i</b></a> |";
+    }
+    else{
+      echo " <a href='contacts.php?$url&page=$i'>$i</a> |";
+    }
+
+  }
+  echo "</div>";
+
 }
 /**
   *This function outputs a table from the results of a contacts query with grouped data.

@@ -50,7 +50,8 @@
     get_contacts_search($page_interval, $offset, $search, $search_by, $category, $show_deleted),
     $page,
     $page_interval,
-    $show_deleted_mode
+    $show_deleted_mode,
+    $_SERVER['QUERY_STRING']
   );
   write_footer();
   ?>

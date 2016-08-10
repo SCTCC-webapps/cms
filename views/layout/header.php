@@ -28,6 +28,7 @@ function write_header(string $custom_code = null)
     echo "<div>";
     nav_bar_and_search();
     echo "</div>";
+    
 }
 function nav_bar_and_search(){
   echo <<<EOD
