@@ -554,6 +554,7 @@ function crud_contact(array $data, $action){
   * @param $action Action to take.
   * @param $id Id to work with.
   * @param $desc Category name.
+  */
 function crud_cat($action = null, $id = null, $desc = null){
   $insert = "INSERT INTO cms_cat(cat_desc) VALUES (:cat_desc)";
   $update = "UPDATE cms_cat SET cat_desc = :cat_desc";
