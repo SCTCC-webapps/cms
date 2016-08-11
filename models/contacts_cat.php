@@ -1,3 +1,4 @@
+
 <?php
 /**
   * `contacts_cat.php` is a file that processes common queries pertaining
@@ -329,8 +330,8 @@ function table_display($data, $page_number = 1, $page_interval = 50, $show_delet
   */
 function page_selector_html($page = 1, $page_interval, $url){
   $count = contact_count();
-  var_dump($count);
-  var_dump($page_interval);
+  //var_dump($count);
+  //var_dump($page_interval);
   $number_of_pages = ceil( $count / $page_interval);
 
   /**
@@ -344,17 +345,17 @@ function page_selector_html($page = 1, $page_interval, $url){
     */
   $pattern = '#&page=(\d+)#';
   $replacement = '';
-  echo <<<EOD
-        <pre>
-        Page = $page
-        Page Interval = $page_interval
-        Count = $count
-        Number of Pages = $number_of_pages;
-        Page URL Query String = $url
-
-EOD;
+//   echo <<<EOD
+//         <pre>
+//         Page = $page
+//         Page Interval = $page_interval
+//         Count = $count
+//         Number of Pages = $number_of_pages;
+//         Page URL Query String = $url
+//
+// EOD;
   $url = preg_replace($pattern, $replacement, $url);
-  echo "Page URL Regex: $url; </pre>";
+  // echo "Page URL Regex: $url; </pre>";
   echo "<div class = ''>";
 
   for($i = 1; $i <= $number_of_pages; $i++){
