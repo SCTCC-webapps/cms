@@ -1,4 +1,5 @@
 <?php
+echo "Action = {$_POST['action']}";
 /**
   * This file is a view for the form that submits a new contact.
   */
@@ -78,6 +79,15 @@ if(isset($_POST['action'])){
       }
     }
     add_or_update($data, $action);
+  }elseif($action == 'restore' || $action == 'perma-delete'){
+    //"ID: {$_POST['id']}";
+    if($action == 'restore' && isset($_POST['id'])){
+      restore_archived($_POST['id']);
+      echo "<div class='greenmessage'>Contact {$action}d!</div>";
+    }elseif($action == 'perma-delete' && isset($_POST['id'])){
+      perma_delete($_POST['id']);
+      echo "<div class='redmessage'>Contact {$action}d!</div>";
+    }
   }
   write_footer();
 }
@@ -109,7 +119,7 @@ function add_or_update(array $data = null, $action = 'add'){
     }
   }else {
     /**
-      * This function to `current()` seems to have been implement to remove a quirk in
+      * This function call to `current()` seems to have been implemented to remove a quirk in
       * the'get_contact_with_categories_by_id()' function that returns
       * an encapsulating array.
       */

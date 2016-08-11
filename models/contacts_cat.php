@@ -303,10 +303,21 @@ function table_display($data, $page_number = 1, $page_interval = 50, $show_delet
       }
         foreach($actions as $action){
           $action_button = ucfirst($action);// `ucfirst()` capitalizes the first letter in a string.
-          echo "<form action='contact.php' method='POST' name='{$row['id']}_$action'>";
+
+          if($show_deleted_mode){
+            $extra_text =  ($action === 'perma-delete') ? 'This action CANNOT BE UNDONE.':'';
+
+            $onsubmit = "onsubmit='return confirm(\"Are you sure you want to $action?".$extra_text."\")'";
+            echo "<form action='contact.php' method='POST' name='{$row['id']}_$action' $onsubmit>";
+          }else{
+            echo "<form action='contact.php' method='POST' name='{$row['id']}_$action'>";
+          }
+
           echo "<input type='hidden' name='action' value='$action'/>";
           echo "<input type='hidden' name='id' value='{$row['id']}'/>";
+
           echo "<input type='submit' name='submit' value='$action_button' class='sctcc-button'/>";
+
           echo "</form>";
         }
       echo "</td>";
@@ -760,7 +771,34 @@ function group_data(PDOStatement $query){
   }
   return $data;
 }
+function restore_archived($cms_id){
+  $undo_soft_delete = "UPDATE cms_contact SET soft_delete = 0";
+  $where = " WHERE cms_id = :cms_id";
+  try{
+    $db = connect();
+    $query = $db->prepare($undo_soft_delete.$where);
+    $query->execute(['cms_id' => $cms_id]);
 
+  }catch(PDOException $e){
+    log_or_echo(false, $e);
+  }
+}
+function perma_delete($cms_id){
+  $delete = "DELETE FROM cms_contact";
+  $where = " WHERE cms_id = :cms_id";
+  $delete_con_cat = "DELETE FROM cms_contact_categories WHERE cms_id = :cms_id";
+  try{
+    $db = connect();
+    $query = $db->prepare($delete_con_cat);
+    $query->execute(['cms_id' => $cms_id]);
+
+    $query = $db->prepare($delete.$where);
+    $query->execute(['cms_id' => $cms_id]);
+  }catch(PDOException $e){
+    log_or_echo(false, $e);
+  }
+
+}
 function redirect($url){
 #config
   header("Location:http://localhost/".$url);

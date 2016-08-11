@@ -28,7 +28,7 @@ function write_header(string $custom_code = null)
     echo "<div>";
     nav_bar_and_search();
     echo "</div>";
-    
+
 }
 function nav_bar_and_search(){
   echo <<<EOD
@@ -50,6 +50,18 @@ EOD;
       echo "<option value='{$id}'>$cat</option>";
     }
     echo "</select>";
+    if(isset($_GET['show_deleted_mode'])){
+      echo "<input type='hidden' name='show_deleted_mode' value='{$_GET['show_deleted_mode']}'/>";
+    }
     echo "<input type='submit' value='Search' class='sctcc-button'/>";
   echo "</form>";
+  echo <<<EON
+    <div class=''>
+    <a href = 'contacts.php'>Contacts</a> |
+    <a href = 'contact.php'>Add New Contact</a> |
+    <a href = 'categories.php'>Categories</a> |
+    <a href = 'contacts.php?&show_deleted_mode=true'>Archived Contacts</a>
+    <!--- | <a href = 'get_spreadsheet.php'>Download Spreadsheet</a>-->
+    </div>
+EON;
 }
