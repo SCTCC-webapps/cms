@@ -1,5 +1,5 @@
 <?php
-echo "Action = {$_POST['action']}";
+//echo "Action = {$_POST['action']}";
 /**
   * This file is a view for the form that submits a new contact.
   */
