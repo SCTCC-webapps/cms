@@ -9,6 +9,7 @@
   * @return PDO $db The database connection.
   */
 function connect(){
+  #config
   $db_host = 'localhost';
   $db_name = 'sctcc_cms';
   $user = 'root';
@@ -25,7 +26,7 @@ function connect(){
   * @param PDOExcepttion $e The PDOException being logged/echoed.
   */
 function log_or_echo($overide = false, PDOException $e){
-  $mode = "echo";
+  $mode = "echo"; #config
   if($mode = "echo" || $override == true) {
     echo $e->getMessage()."<br/>";
   }else if($mode == "log"){

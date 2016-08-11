@@ -762,6 +762,7 @@ function group_data(PDOStatement $query){
 }
 
 function redirect($url){
+#config
   header("Location:http://localhost/".$url);
 }
 

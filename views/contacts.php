@@ -44,7 +44,7 @@
   //echo "<div class='redmessage'>Search: $search   Search By: $search_by   Category: $category</div>";
   echo "<h3>Contacts List</h3><hr>";
   //table_display(get_contacts_with_categories(0, $search, $search_by, $category));
-  $page_interval = 50;
+  $page_interval = 50; #config
   $offset = $page_interval * ($page - 1);
   table_display(
     get_contacts_search($page_interval, $offset, $search, $search_by, $category, $show_deleted),

@@ -1,4 +1,6 @@
 <?php
+//`cat.php` was originally intended to be a function file for categories.
+// You should be able to delete this file and have everything work just fine, as nothing requires it.
 require 'db-connect.php';
 function list_all_categories(){
   $sql = "SELECT * FROM  sctcc_cms.cms_cat;";
